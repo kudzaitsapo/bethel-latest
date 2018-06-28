@@ -1,4 +1,11 @@
+import os
 import unittest
+
+from coverage import coverage
+basedir = os.getcwd()
+cov = coverage(branch=True, omit=['.git/*', 'venv/*', 'models_tests.py', 'requirements.txt'])
+cov.start()
+
 from app import app, db
 from app.models import *
 
@@ -305,4 +312,15 @@ class OperationRecordModelCase(unittest.TestCase):
         # self.assertEqual(record.surgical_team.count(), 3)
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    # unittest.main(verbosity=2)
+    try:
+        unittest.main(verbosity=2)
+    except:
+        pass
+    cov.stop()
+    cov.save()
+    print("\n\mCoverage Report:\n")
+    cov.report()
+    print("HTML version: " + os.path.join(basedir, "tmp/coverage/index.html"))
+    cov.html_report(directory='tmp/coverage')
+    cov.erase()

@@ -942,7 +942,6 @@ class OperativeRecord(db.Model):
     def to_dict(self):
         data = {
             'id': self.id,
-            'anaesthetic': self.anaesthetic,
             'posture': self.posture,
             'iv_therapy': self.iv_therapy,
             'skin': self.skin,
@@ -959,7 +958,7 @@ class OperativeRecord(db.Model):
 
     def from_dict(self, data):
         for field in [
-            'anaesthetic', 'posture', 'iv_therapy',
+            'posture', 'iv_therapy',
             'skin', 'color', 'reflexes', 'blood_pressure',
             'pulse_rate', 'abnormal_reactions'
         ]:
