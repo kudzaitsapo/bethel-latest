@@ -8,6 +8,7 @@ cov.start()
 
 from app import app, db
 from app.models import *
+from datetime import datetime
 
 
 class PractitionerDetailsModelCase(unittest.TestCase):
@@ -126,6 +127,7 @@ class PatientDetailsModelCase(unittest.TestCase):
 
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        self.app = app.test_client()
         db.create_all()
         self.alan = PatientDetails(first_names='alan', national_id='rqwerrr1rq')
         self.chris = PatientDetails(first_names='chris', national_id='rqwerrr2rq')
@@ -142,9 +144,11 @@ class PatientDetailsModelCase(unittest.TestCase):
         patient1 = self.patient_details_obj.find_one(self.moris.id)
         # self.assertError(patient2 = self.patient_details_obj.find_patient(5))
         self.assertEqual(patient1['id'], 3)
+        # patient404 = self.patient_details_obj.find_one(404)
+        # # print(type(patient404))
 
     def test_find_all_patients(self):
-        patients = self.patient_details_obj.find_all(1,1,'app.get_patient_records')
+        patients = self.patient_details_obj.find_all(1,1,'get_all_patient_details')
         self.assertNotEqual(patients['_meta']['total_pages'], 4)
         self.assertEqual(patients['_meta']['total_pages'], 3)
 
@@ -202,7 +206,7 @@ class OperationRecordModelCase(unittest.TestCase):
         # print('\n\n\n')
 
     def test_find_all_records(self):
-        records = self.operation_record_obj.find_all(2,1,'endpoint')
+        records = self.operation_record_obj.find_all(2,1,'get_operation_records')
         self.assertNotEqual(records['_meta']['total_pages'], 4)
         self.assertEqual(records['_meta']['total_pages'], 3)
         # print (records)
@@ -310,6 +314,42 @@ class OperationRecordModelCase(unittest.TestCase):
         self.assertEqual(record['pre_operative_record_id'], 5)
         # self.assertEqual(record.vitals.count(), 3)
         # self.assertEqual(record.surgical_team.count(), 3)
+
+    def test_time(self):
+        p1 = PractitionerDetails(first_names='Chris')
+        p2 = PractitionerDetails(first_names='Moris')
+        db.session.add_all([p1, p2])
+        anaesthetic_obj = Anaesthetic()
+        anaesthetic = anaesthetic_obj.save({'drug_id': 2})
+        self.operation_data = {
+                        'theater_id': '32232',
+                        'start_time': '14:15',
+                        'patient_details_data': {'first_names': 'chris', 'national_id': 'r453354q'},
+                        'referal_data': {'referer_id': 20, 'patient_id': 232, 'note': 'this guy is sick'},
+                        'operative_data': {'skin': 'dark'},
+                        'anaesthetic_data': {'drug_id': 1},
+                        'pre_operative_data': {
+                                'mass': '23',
+                                'attachment_data': {'url': 'link_to_file', 'file_type': 'png'},
+                                'premedication_data': {
+                                        'given_by': 10,
+                                        'prescription_data':{'patient_id': 3323, 'details': 'some medicine'}
+                                }
+                        },
+                        'post_operative_data': {'instructions_to_ward': 'some stuff'},
+                        'vitals_data':{
+                                'readings':[
+                                    {'oxygen': 200, 'blood_pressure': 2},
+                                    {'oxygen': 300, 'blood_pressure': 8}
+                                ]
+                        },
+                        'surgical_team': [
+                                p1,
+                                p2,
+                                p2
+                        ]
+        }
+        record = self.operation_record_obj.save(self.operation_data)
 
 if __name__ == '__main__':
     # unittest.main(verbosity=2)

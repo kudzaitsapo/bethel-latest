@@ -1,12 +1,12 @@
 {
-   "operation_data":{   
-      "start_time":"time",
-      "end_time":"time",
-      "date_of_operation":"date",
+   "operation_data":{
+      "start_time":"4 Jan 2018 12:56",
+      "end_time":"4 Jan 2018 12:56",
+      "date_of_operation":"4 Jan 2018 12:56",
       "patient_details_data":{
-        "first_names":"chris",
-        "surname":"moris",
-        "national_id":"elmc-432",
+        "first_names":"john",
+        "surname":"doe",
+        "national_id":"elmc-12",
         "gender":"m",
         "address":"Elmore",
         "phone":"01234567889"
@@ -29,7 +29,7 @@
       },
       "post_operative_data":{
         "instructions_to_ward":"instructions to ward",
-        "general":"general",
+        "general":"general",to
         "iv_therapy":"IV Therapy",
         "sedation":"sedation",
         "complications":"complications"
@@ -40,12 +40,12 @@
           "name":"name",
           "description":"description"
         },
-        "start_time":"time",
-        "finish_time":"time"
+        "start_time":"4 Jan 2018 12:56",
+        "finish_time":"4 Jan 2018 12:56"
       },
       "pre_operative_data":{
-        "mass":"mass",
-        "temperature":"temperature",
+        "mass":46,
+        "temperature":78,
         "pulse":"pulse",
         "respiration":"respiration",
         "respiratory_system":"respiratory system",
@@ -84,13 +84,13 @@
             "heart_rate":"heart rate",
             "oxygen":"oxygen",
             "blood_pressure":"blood pressure",
-            "time":"time"
+            "time":"4 Jan 2018 12:56"
           },
           {
             "heart_rate":"heart rate",
             "oxygen":"oxygen",
             "blood_pressure":"blood pressure",
-            "time":"time"
+            "time":"4 Jan 2018 12:56"
           }
         ]
       },

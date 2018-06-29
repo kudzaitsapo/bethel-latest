@@ -1,5 +1,7 @@
 from app import db
 from flask import url_for
+from dateutil import parser
+from datetime import datetime
 
 
 class PaginateAPI(object):
@@ -147,9 +149,9 @@ class PractitionerDetails(db.Model):
             # 'occupatoin': self.occupatoin,
             'phone': self.phone,
             'address': self.address,
-            '_links': {
-                'self': url_for('app.get_practioner', id=self.id)
-            }
+            # '_links': {
+            #     'self': url_for('app.get_practioner', id=self.id)
+            # }
         }
         return data
 
@@ -176,9 +178,9 @@ class Occupation(db.Model):
         data = {
             'id': self.id,
             'title': self.title,
-            '_links': {
-                'self': url_for('app.get_occupation', id=self.id)
-            }
+            # '_links': {
+            #     'self': url_for('app.get_occupation', id=self.id)
+            # }
         }
 
     def from_dict(self, data):
@@ -198,9 +200,9 @@ class Hospital(db.Model):
         data = {
             'id': self.id,
             'name': self.name,
-            '_links': {
-                'self': url_for('app.get_hospital', id=self.id)
-            }
+            # '_links': {
+            #     'self': url_for('app.get_hospital', id=self.id)
+            # }
         }
 
     def from_dict(self, data):
@@ -221,9 +223,9 @@ class Ward(db.Model):
         data = {
             'id': self.id,
             'title': self.name,
-            '_links': {
-                'self': url_for('app.get_ward', id=self.id)
-            }
+            # '_links': {
+            #     'self': url_for('app.get_ward', id=self.id)
+            # }
         }
 
     def from_dict(self, data):
@@ -245,9 +247,9 @@ class Theater(db.Model):
         data = {
             'id': self.id,
             'title': self.name,
-            '_links': {
-                'self': url_for('app.get_theater', id=self.id)
-            }
+            # '_links': {
+            #     'self': url_for('app.get_theater', id=self.id)
+            # }
         }
 
     def from_dict(self, data):
@@ -280,8 +282,9 @@ class PatientDetails(PaginateAPI, db.Model):
 
     def save(self, data):
         # try:
-        if data['national_id'] is not None:
+        if 'national_id' in data:
             self = self.from_dict(data)
+            print(self)
             db.session.add(self)
             db.session.commit()
             return self.to_dict()
@@ -317,8 +320,8 @@ class PatientDetails(PaginateAPI, db.Model):
             'address': self.address,
             'phone': self.phone,
             '_links': {
-                # 'self': url_for('app.get_patient_record', id=self.id)
-                # 'operatoin_records': url_for('app.get_operation_records', patient_id=self.id),
+                # 'self': url_for('get_patient_details', patient_id=self.id)
+                # 'operatoin_records': url_for('app.get_patient_details', patient_id=self.id),
                 # 'medication': url_for('app.get_medications', patient_id=self.id)
             }
         }
@@ -426,8 +429,9 @@ class OperationRecord(PaginateAPI, db.Model):
         vitals_data['operation_record_id'] = self.id
         vitals_record_obj = VitalsRecord()
         vitals = vitals_record_obj.save(vitals_data)
-        surgical_team_data = data['surgical_team']
-        self.add_team(self.id, surgical_team_data)
+        if 'surgical_team' in data:
+            surgical_team_data = data['surgical_team']
+            self.add_team(self.id, surgical_team_data)
         return self.to_dict()
         # except: # add exception to error
         #     return {'message': 'oops failed to save operation record'}
@@ -490,14 +494,14 @@ class OperationRecord(PaginateAPI, db.Model):
             'reference_id': self.reference_id,
             'theater_id': self.theater_id,
             'date': self.date,
-            'start_time': self.start_time,
-            'end_time': self.end_time,
+            'start_time': str(self.start_time),
+            'end_time': str(self.end_time),
             'pre_operative_record_id': self.pre_operative_record_id,
             'operative_record_id': self.operative_record_id,
             'post_operative_record_id': self.post_operative_record_id,
             'anaesthetic_id': self.anaesthetic_id,
             '_links': {
-                # 'self': url_for('app.get_operation_record', id=self.id)
+                # 'self': url_for('get_operation_record', operation_id=self.id)
             }
         }
         return data
@@ -510,14 +514,22 @@ class OperationRecord(PaginateAPI, db.Model):
             'anaesthetic_id'
         ]:
             if field in data:
-                setattr(self, field, data[field])
+                if (field is 'start_time') or (field is 'end_time'):
+                    date = parser.parse(data[field])
+                    time = datetime.time(date)
+                    setattr(self, field, time)
+                elif (field is 'date'):
+                    date = parser.parse(data[field])
+                    setattr(self, field, date)
+                else:
+                    setattr(self, field, data[field])
         return self
 
 
 class PreOperativeRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    mass = db.Column(db.Float)
-    temperature = db.Column(db.Float)
+    mass = db.Column(db.String)
+    temperature = db.Column(db.String)
     pulse = db.Column(db.String)
     respiration = db.Column(db.String)
     respiratory_system = db.Column(db.String)
@@ -681,7 +693,7 @@ class PremedicationRecord(db.Model):
         data = {
             'id': self.id,
             'prescription_id': self.prescription_id,
-            'time_given': self.time_given,
+            'time_given': str(self.time_given),
             'given_by': self.given_by,
             'pre_operative_record_id': self.pre_operative_record_id
             # '_links': {
@@ -693,7 +705,12 @@ class PremedicationRecord(db.Model):
     def from_dict(self, data):
         for field in ['prescription_id', 'time_given', 'given_by', 'pre_operative_record_id']:
             if field in data:
-                setattr(self, field, data[field])
+                if field is 'time_given':
+                    date = parser.parse(data[field])
+                    time = datetime.time(date)
+                    setattr(self, field, time)
+                else:
+                    setattr(self, field, data[field])
         return self
 
 
@@ -728,8 +745,8 @@ class Anaesthetic(db.Model):
     def to_dict(self):
         data = {
             'id': self.id,
-            'start_time': self.start_time,
-            'end_time': self.end_time,
+            'start_time': str(self.start_time),
+            'end_time': str(self.end_time),
             'drug_id': self.drug_id,
             'technique_id': self.technique_id,
             # '_links': {
@@ -739,9 +756,14 @@ class Anaesthetic(db.Model):
         return data
 
     def from_dict(self, data):
-        for field in ['start_time', 'end_time', 'end_time', 'technique_id']:
+        for field in ['start_time', 'end_time', 'drug_id', 'technique_id']:
             if field in data:
-                setattr(self, field, data[field])
+                if (field is 'start_time') or (field is 'end_time'):
+                    date = parser.parse(data[field])
+                    time = datetime.time(date)
+                    setattr(self, field, time)
+                else:
+                    setattr(self, field, data[field])
         return self
 
 
@@ -889,7 +911,7 @@ class VitalsRecord(db.Model):
             'heart_rate': self.heart_rate,
             'oxygen': self.oxygen,
             'blood_pressure': self.blood_pressure,
-            'time': self.time,
+            'time': str(self.time),
             'operation_record_id': self.operation_record_id
             # '_links': {
             #     # 'self': url_for('app.get_operation_record', id=self.id)
@@ -903,7 +925,12 @@ class VitalsRecord(db.Model):
             'blood_pressure', 'operation_record_id'
         ]:
             if field in data:
-                setattr(self, field, data[field])
+                if field is 'time':
+                    date = parser.parse(data[field])
+                    time = datetime.time(date)
+                    setattr(self, field, time)
+                else:
+                    setattr(self, field, data[field])
         return self
 
 
