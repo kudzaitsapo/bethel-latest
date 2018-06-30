@@ -1,0 +1,102 @@
+{
+   "operation_data":{
+      "start_time":"4 Jan 2018 12:56",
+      "end_time":"4 Jan 2018 12:56",
+      "date_of_operation":"4 Jan 2018 12:56",
+      "patient_details_data":{
+        "first_names":"john",
+        "surname":"doe",
+        "national_id":"elmc-12",
+        "gender":"m",
+        "address":"Elmore",
+        "phone":"01234567889"
+      },
+      "referal_data":{
+        "referer_id":"refereer id",
+        "patient_id":"patient id",
+        "note":"note"
+      },
+      "theater_id":"32232",
+      "operative_data":{
+        "posture":"posture",
+        "iv_therapy":"IV Therapy",
+        "skin":"skin",
+        "color":"colour",
+        "reflexes":"relexes",
+        "blood_pressure":"blood pressusure",
+        "palse_rate":"palse rate",
+        "abnormal_reactions":"abnornal reactions"
+      },
+      "post_operative_data":{
+        "instructions_to_ward":"instructions to ward",
+        "general":"general",to
+        "iv_therapy":"IV Therapy",
+        "sedation":"sedation",
+        "complications":"complications"
+      },
+      "anaesthetic_data":{
+        "drug_name":"drug name",
+        "technique":{
+          "name":"name",
+          "description":"description"
+        },
+        "start_time":"4 Jan 2018 12:56",
+        "finish_time":"4 Jan 2018 12:56"
+      },
+      "pre_operative_data":{
+        "mass":46,
+        "temperature":78,
+        "pulse":"pulse",
+        "respiration":"respiration",
+        "respiratory_system":"respiratory system",
+        "cadiovascular_system":"cadiovascular system",
+        "urine":"urine",
+        "blood_group":"blood group",
+        "blood_pressure":"blood pressure",
+        "heamoglobin":"heamoglobin",
+        "blood_urine":"blood urine",
+        "drug_therapy":"drug therapy",
+        "attachment_data":{
+          "attachment":[
+            {
+               "description":"description",
+               "url":"link_to_file",
+               "file_type":"png"
+            },
+            {
+               "description":"description",
+               "url":"link_to_file",
+               "file_type":"png"
+            }
+          ]
+        },
+        "premedication_data":{
+          "given_by":"practioner detailsd",
+          "prescription_data":{
+            "ordered_by":"practioner details",
+            "details":"details"
+          }
+        }
+      },
+      "vitals_data":{
+        "readings":[
+          {
+            "heart_rate":"heart rate",
+            "oxygen":"oxygen",
+            "blood_pressure":"blood pressure",
+            "time":"4 Jan 2018 12:56"
+          },
+          {
+            "heart_rate":"heart rate",
+            "oxygen":"oxygen",
+            "blood_pressure":"blood pressure",
+            "time":"4 Jan 2018 12:56"
+          }
+        ]
+      },
+      "surgical_team":[
+        "team member data",
+        "team member data"
+      ]
+   }
+}

@@ -1,6 +1,9 @@
-from flask import jsonify
-from app import app
+from app.errors import bp
 from werkzeug.http import HTTP_STATUS_CODES
+
+@bp.route('/')
+def index():
+    return "dkd"
 
 def error_resposnse(status_code, message=None):
     payload = {'error': HTTP_STATUS_CODES.get(status_code, 'Uknown error')}

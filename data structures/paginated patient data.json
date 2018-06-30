@@ -1,0 +1,39 @@
+{
+    "_links": {
+        "next": "/patients?per_page=2&page=3",
+        "prev": "/patients?per_page=2&page=1",
+        "self": "/patients?per_page=2&page=2"
+    },
+    "_meta": {
+        "page": 2,
+        "per_page": 2,
+        "total_items": 5,
+        "total_pages": 3
+    },
+    "items": [
+        {
+            "_links": {
+                "self": "/patients/3"
+            },
+            "address": "Elmore",
+            "first_names": "chris",
+            "gender": "m",
+            "id": 3,
+            "national_id": "elmc-432",
+            "phone": "01234567889",
+            "surname": "moris"
+        },
+        {
+            "_links": {
+                "self": "/patients/4"
+            },
+            "address": "Elmore",
+            "first_names": "john",
+            "gender": "m",
+            "id": 4,
+            "national_id": "elmc-123",
+            "phone": "01234567889",
+            "surname": "doe"
+        }
+    ]
+}

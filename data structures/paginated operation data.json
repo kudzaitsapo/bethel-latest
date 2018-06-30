@@ -1,0 +1,47 @@
+{
+    "_links": {
+        "next": "/operations?per_page=2&page=3",
+        "prev": "/operations?per_page=2&page=1",
+        "self": "/operations?per_page=2&page=2"
+    },
+    "_meta": {
+        "page": 2,
+        "per_page": 2,
+        "total_items": 6,
+        "total_pages": 3
+    },
+    "items": [
+        {
+            "_links": {
+                "self": "/operations/3"
+            },
+            "anaesthetic_id": 18,
+            "date": "Thu, 04 Jan 2018 00:00:00 GMT",
+            "end_time": "12:56:00",
+            "id": 3,
+            "operative_record_id": 37,
+            "patient_id": 2,
+            "post_operative_record_id": 18,
+            "pre_operative_record_id": 37,
+            "reference_id": 38,
+            "start_time": "12:56:00",
+            "theater_id": 32232
+        },
+        {
+            "_links": {
+                "self": "/operations/4"
+            },
+            "anaesthetic_id": 19,
+            "date": "Thu, 04 Jan 2018 00:00:00 GMT",
+            "end_time": "12:56:00",
+            "id": 4,
+            "operative_record_id": 38,
+            "patient_id": 2,
+            "post_operative_record_id": 19,
+            "pre_operative_record_id": 38,
+            "reference_id": 39,
+            "start_time": "12:56:00",
+            "theater_id": 32232
+        }
+    ]
+}a

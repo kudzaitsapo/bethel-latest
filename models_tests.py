@@ -10,6 +10,54 @@ from app import app, db
 from app.models import *
 from datetime import datetime
 
+class DAOCase(unittest.TestCase):
+
+    def setUp(self):
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        db.create_all()
+        self.alan = PatientDetails(first_names='alan', national_id='rqwerrr1rq')
+        self.chris = PatientDetails(first_names='chris', national_id='rqwerrr2rq')
+        self.moris = PatientDetails(first_names='moris', national_id='rqwerrr3rq')
+        self.doc = PractitionerDetails(first_names='moris')
+        db.session.add_all([self.alan, self.chris, self.moris, self.doc])
+        db.session.commit()
+        # patient_model = ModelFactory.make_model('PatientDetails')
+        self.dao = DAO(PatientDetails())
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+
+    def test_find(self):
+        patient1 = self.dao.find_one(1)
+        # self.assertError(patient2 = dao.find_patient(5))
+        self.assertEqual(patient1['id'], self.alan.id)
+
+    def test_save(self):
+        data = {'national_id':'afdsads','first_names':'chris'}
+        patient = self.dao.save(data)
+        self.assertEqual(patient['id'], 4)
+
+    # def test_save_patient_failure(self):
+    #     data = {'first_names':'chris'}
+    #     patient = self.dao.save_patient(data)
+    #     self.assertEqual(patient['message'], 'oops failed to save patient details.')
+
+    def test_update(self):
+        data = {'id':2, 'first_names':'james', 'national_id': 'rqwerrr2rq'}
+        patient = self.dao.update(data)
+        self.assertEqual(patient['first_names'], 'james')
+        self.assertNotEqual(patient['id'], 4)
+        self.assertEqual(patient['id'], 2)
+
+    def test_update_patient_failure(self):
+        data = {'first_names':'james'}
+        patient = self.dao.update(data)
+        self.assertEqual(patient['message'], 'Patient ID must be provided.')
+        data = {'id':'','first_names':'james'}
+        patient = self.dao.update(data)
+        self.assertEqual(patient['message'], 'Patient ID cannot be empty.')
+
 
 class PractitionerDetailsModelCase(unittest.TestCase):
 
@@ -123,59 +171,59 @@ class PractitionerDetailsModelCase(unittest.TestCase):
         print ('test deletion')
 
 
-class PatientDetailsModelCase(unittest.TestCase):
-
-    def setUp(self):
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
-        self.app = app.test_client()
-        db.create_all()
-        self.alan = PatientDetails(first_names='alan', national_id='rqwerrr1rq')
-        self.chris = PatientDetails(first_names='chris', national_id='rqwerrr2rq')
-        self.moris = PatientDetails(first_names='moris', national_id='rqwerrr3rq')
-        db.session.add_all([self.alan, self.chris, self.moris])
-        db.session.commit()
-        self.patient_details_obj = PatientDetails()
-
-    def tearDown(self):
-        db.session.remove()
-        db.drop_all()
-
-    def test_find_patient(self):
-        patient1 = self.patient_details_obj.find_one(self.moris.id)
-        # self.assertError(patient2 = self.patient_details_obj.find_patient(5))
-        self.assertEqual(patient1['id'], 3)
-        # patient404 = self.patient_details_obj.find_one(404)
-        # # print(type(patient404))
-
-    def test_find_all_patients(self):
-        patients = self.patient_details_obj.find_all(1,1,'get_all_patient_details')
-        self.assertNotEqual(patients['_meta']['total_pages'], 4)
-        self.assertEqual(patients['_meta']['total_pages'], 3)
-
-    def test_save_patient(self):
-        data = {'national_id':'afdsads','first_names':'chris'}
-        patient = self.patient_details_obj.save(data)
-        self.assertEqual(patient['id'], 4)
-
-    # def test_save_patient_failure(self):
-    #     data = {'first_names':'chris'}
-    #     patient = self.patient_details_obj.save_patient(data)
-    #     self.assertEqual(patient['message'], 'oops failed to save patient details.')
-
-    def test_update_patient(self):
-        data = {'id':2, 'first_names':'james', 'national_id': 'rqwerrr2rq'}
-        patient = self.patient_details_obj.update(data)
-        self.assertEqual(patient['first_names'], 'james')
-        self.assertNotEqual(patient['id'], 4)
-        self.assertEqual(patient['id'], 2)
-
-    def test_update_patient_failure(self):
-        data = {'first_names':'james'}
-        patient = self.patient_details_obj.update(data)
-        self.assertEqual(patient['message'], 'Patient ID must be provided.')
-        data = {'id':'','first_names':'james'}
-        patient = self.patient_details_obj.update(data)
-        self.assertEqual(patient['message'], 'Patient ID cannot be empty.')
+# class PatientDetailsModelCase(unittest.TestCase):
+#
+#     def setUp(self):
+#         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+#         self.app = app.test_client()
+#         db.create_all()
+#         self.alan = PatientDetails(first_names='alan', national_id='rqwerrr1rq')
+#         self.chris = PatientDetails(first_names='chris', national_id='rqwerrr2rq')
+#         self.moris = PatientDetails(first_names='moris', national_id='rqwerrr3rq')
+#         db.session.add_all([self.alan, self.chris, self.moris])
+#         db.session.commit()
+#         self.patient_details_obj = PatientDetails()
+#
+#     def tearDown(self):
+#         db.session.remove()
+#         db.drop_all()
+#
+#     def test_find_patient(self):
+#         patient1 = self.patient_details_obj.find_one(self.moris.id)
+#         # self.assertError(patient2 = self.patient_details_obj.find_patient(5))
+#         self.assertEqual(patient1['id'], 3)
+#         # patient404 = self.patient_details_obj.find_one(404)
+#         # # print(type(patient404))
+#
+#     def test_find_all_patients(self):
+#         patients = self.patient_details_obj.find_all(1,1,'get_all_patient_details')
+#         self.assertNotEqual(patients['_meta']['total_pages'], 4)
+#         self.assertEqual(patients['_meta']['total_pages'], 3)
+#
+#     def test_save_patient(self):
+#         data = {'national_id':'afdsads','first_names':'chris'}
+#         patient = self.patient_details_obj.save(data)
+#         self.assertEqual(patient['id'], 4)
+#
+#     # def test_save_patient_failure(self):
+#     #     data = {'first_names':'chris'}
+#     #     patient = self.patient_details_obj.save_patient(data)
+#     #     self.assertEqual(patient['message'], 'oops failed to save patient details.')
+#
+#     def test_update_patient(self):
+#         data = {'id':2, 'first_names':'james', 'national_id': 'rqwerrr2rq'}
+#         patient = self.patient_details_obj.update(data)
+#         self.assertEqual(patient['first_names'], 'james')
+#         self.assertNotEqual(patient['id'], 4)
+#         self.assertEqual(patient['id'], 2)
+#
+#     def test_update_patient_failure(self):
+#         data = {'first_names':'james'}
+#         patient = self.patient_details_obj.update(data)
+#         self.assertEqual(patient['message'], 'Patient ID must be provided.')
+#         data = {'id':'','first_names':'james'}
+#         patient = dao.update(data)
+#         self.assertEqual(patient['message'], 'Patient ID cannot be empty.')
 
 
 class OperationRecordModelCase(unittest.TestCase):
