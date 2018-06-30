@@ -5,12 +5,12 @@ from flask.views import MethodView
 
 vitals_record_dao = DAO(VitalsRecord())
 
-@bp.route('/vitals_records/<int:vitals_record_id>', methods=['GET'])
+@bp.route('/vitals-records/<int:vitals_record_id>', methods=['GET'])
 def get_vitals_record_details(vitals_record_id):
     vitals_record = vitals_record_dao.find_one(vitals_record_id)
     return jsonify(vitals_record)
 
-@bp.route('/vitals_records', methods=['GET'])
+@bp.route('/vitals-records', methods=['GET'])
 def get_all_vitals_records():
     args = request.args
     if not ('page' in args) and not ('per_page' in args):
@@ -20,17 +20,17 @@ def get_all_vitals_records():
     vitals_records = vitals_record_dao.find_all(page,per_page,'api.get_all_vitals_records')
     return jsonify(vitals_records)
 
-@bp.route('/vitals_records', methods=['POST'])
+@bp.route('/vitals-records', methods=['POST'])
 def save_vitals_record_details():
     details = request.get_json(silent=False)
     new_vitals_record = vitals_record_dao.save(details)
     return jsonify(new_vitals_record)
 
-@bp.route('/vitals_records/<int:vitals_record_id>', methods=['DELETE'])
+@bp.route('/vitals-records/<int:vitals_record_id>', methods=['DELETE'])
 def delete_vitals_record_details(vitals_record_id):
     return "delete vitals_record"
 
-@bp.route('/vitals_records/<int:vitals_record_id>', methods=['PATCH'])
+@bp.route('/vitals-records/<int:vitals_record_id>', methods=['PATCH'])
 def update_vitals_record_details(vitals_record_id):
     data = request.get_json(silent=False)
     if 'id' not in data:

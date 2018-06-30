@@ -5,12 +5,12 @@ from flask.views import MethodView
 
 preoperative_record_dao = DAO(PreOperativeRecord())
 
-@bp.route('/preoperative_records/<int:preoperative_record_id>', methods=['GET'])
+@bp.route('/preoperative-records/<int:preoperative_record_id>', methods=['GET'])
 def get_preoperative_record_details(preoperative_record_id):
     preoperative_record = preoperative_record_dao.find_one(preoperative_record_id)
     return jsonify(preoperative_record)
 
-@bp.route('/preoperative_records', methods=['GET'])
+@bp.route('/preoperative-records', methods=['GET'])
 def get_all_preoperative_records():
     args = request.args
     if not ('page' in args) and not ('per_page' in args):
@@ -20,17 +20,17 @@ def get_all_preoperative_records():
     preoperative_records = preoperative_record_dao.find_all(page,per_page,'api.get_all_preoperative_records')
     return jsonify(preoperative_records)
 
-@bp.route('/preoperative_records', methods=['POST'])
+@bp.route('/preoperative-records', methods=['POST'])
 def save_preoperative_record_details():
     details = request.get_json(silent=False)
     new_preoperative_record = preoperative_record_dao.save(details)
     return jsonify(new_preoperative_record)
 
-@bp.route('/preoperative_records/<int:preoperative_record_id>', methods=['DELETE'])
+@bp.route('/preoperative-records/<int:preoperative_record_id>', methods=['DELETE'])
 def delete_preoperative_record_details(preoperative_record_id):
     return "delete preoperative_record"
 
-@bp.route('/preoperative_records/<int:preoperative_record_id>', methods=['PATCH'])
+@bp.route('/preoperative-records/<int:preoperative_record_id>', methods=['PATCH'])
 def update_preoperative_record_details(preoperative_record_id):
     data = request.get_json(silent=False)
     if 'id' not in data:
