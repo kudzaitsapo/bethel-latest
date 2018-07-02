@@ -12,7 +12,6 @@ class ModelFactory():
     def make_model(make_model):
         return models_dictionary[make_model]()
 
-
 class DAO(object):
 
     def __init__(self, object):
