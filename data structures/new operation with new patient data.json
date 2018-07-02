@@ -57,7 +57,7 @@
         "blood_urine":"blood urine",
         "drug_therapy":"drug therapy",
         "attachment_data":{
-          "attachment":[
+          "items":[
             {
                "description":"description",
                "url":"link_to_file",
@@ -79,7 +79,7 @@
         }
       },
       "vitals_data":{
-        "readings":[
+        "items":[
           {
             "heart_rate":"heart rate",
             "oxygen":"oxygen",

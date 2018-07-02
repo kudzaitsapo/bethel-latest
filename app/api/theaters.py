@@ -5,18 +5,15 @@ from flask.views import MethodView
 
 theater_dao = DAO(Theater())
 
-@bp.route('/theaters/<int:theater_id>', methods=['GET'])
-def get_theater_details(theater_id):
-    theater = theater_dao.find_one(theater_id)
+@bp.route('/theaters/<int:id>', methods=['GET'])
+def get_theater_details(id):
+    theater = theater_dao.find_one(id)
     return jsonify(theater)
 
 @bp.route('/theaters', methods=['GET'])
 def get_all_theaters():
     args = request.args
-    if not ('page' in args) and not ('per_page' in args):
-        return jsonify({'error': 'invalid pagination data'})
-    page = int(args['page'])
-    per_page = int(args['per_page'])
+    page, per_page = helpers.paginate(args)
     theaters = theater_dao.find_all(page,per_page,'api.get_all_theaters')
     return jsonify(theaters)
 
@@ -26,14 +23,22 @@ def save_theater_details():
     new_theater = theater_dao.save(details)
     return jsonify(new_theater)
 
-@bp.route('/theaters/<int:theater_id>', methods=['DELETE'])
-def delete_theater_details(theater_id):
+@bp.route('/theaters/<int:id>', methods=['DELETE'])
+def delete_theater_details(id):
     return "delete theater"
 
-@bp.route('/theaters/<int:theater_id>', methods=['PATCH'])
-def update_theater_details(theater_id):
+@bp.route('/theaters/<int:id>', methods=['PATCH'])
+def update_theater_details(id):
     data = request.get_json(silent=False)
     if 'id' not in data:
-        data["id"] = theater_id
+        data["id"] = id
     updated_theater = theater_dao.update(data)
     return jsonify(updated_theater)
+
+@bp.route('/theaters/<int:id>/operations', methods=['GET'])
+def get_theater_operations(id):
+    theater = Theater.query.get_or_404(id)
+    args = request.args
+    page, per_page = helpers.paginate(args)
+    operations = theater_dao.find_relations(theater.operations,page,per_page,'api.get_theater_operations', id=id)
+    return jsonify(operations)

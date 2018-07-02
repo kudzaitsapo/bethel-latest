@@ -1,21 +1,18 @@
-from app.api import bp
+from app.api import bp, helpers
 from app.models import Anaesthetic, DAO
 from flask import jsonify, request
 
 anaesthetic_dao = DAO(Anaesthetic())
 
-@bp.route('/anaesthetics/<int:anaesthetic_id>', methods=['GET'])
-def get_anaesthetic_details(anaesthetic_id):
-    anaesthetic = anaesthetic_dao.find_one(anaesthetic_id)
+@bp.route('/anaesthetics/<int:id>', methods=['GET'])
+def get_anaesthetic_details(id):
+    anaesthetic = anaesthetic_dao.find_one(id)
     return jsonify(anaesthetic)
 
 @bp.route('/anaesthetics', methods=['GET'])
 def get_all_anaesthetics():
     args = request.args
-    if not ('page' in args) and not ('per_page' in args):
-        return jsonify({'error': 'invalid pagination data'})
-    page = int(args['page'])
-    per_page = int(args['per_page'])
+    page, per_page = helpers.paginate(args)
     anaesthetics = anaesthetic_dao.find_all(page,per_page,'api.get_all_anaesthetics')
     return jsonify(anaesthetics)
 
@@ -25,14 +22,14 @@ def save_anaesthetic_details():
     new_anaesthetic = anaesthetic_dao.save(details)
     return jsonify(new_anaesthetic)
 
-@bp.route('/anaesthetics/<int:anaesthetic_id>', methods=['DELETE'])
-def delete_anaesthetic_details(anaesthetic_id):
+@bp.route('/anaesthetics/<int:id>', methods=['DELETE'])
+def delete_anaesthetic_details(id):
     return "delete anaesthetic"
 
-@bp.route('/anaesthetics/<int:anaesthetic_id>', methods=['PATCH'])
-def update_anaesthetic_details(anaesthetic_id):
+@bp.route('/anaesthetics/<int:id>', methods=['PATCH'])
+def update_anaesthetic_details(id):
     data = request.get_json(silent=False)
     if 'id' not in data:
-        data["id"] = anaesthetic_id
+        data["id"] = id
     updated_anaesthetic = anaesthetic_dao.update(data)
     return jsonify(updated_anaesthetic)

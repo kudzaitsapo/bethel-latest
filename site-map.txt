@@ -4,6 +4,7 @@
   "HEAD,OPTIONS,GET     /api/preoperative-records",
   "HEAD,OPTIONS,GET     /api/operative-records",
   "HEAD,OPTIONS,GET     /api/vitals-records",
+  "HEAD,OPTIONS,GET     /api/practitioners",
   "HEAD,OPTIONS,GET     /api/prescriptions",
   "HEAD,OPTIONS,GET     /api/anaesthetics",
   "HEAD,OPTIONS,GET     /api/attachmentss",

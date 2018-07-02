@@ -5,18 +5,15 @@ from flask.views import MethodView
 
 technique_dao = DAO(Technique())
 
-@bp.route('/techniques/<int:technique_id>', methods=['GET'])
-def get_technique_details(technique_id):
-    technique = technique_dao.find_one(technique_id)
+@bp.route('/techniques/<int:id>', methods=['GET'])
+def get_technique_details(id):
+    technique = technique_dao.find_one(id)
     return jsonify(technique)
 
 @bp.route('/techniques', methods=['GET'])
 def get_all_techniques():
     args = request.args
-    if not ('page' in args) and not ('per_page' in args):
-        return jsonify({'error': 'invalid pagination data'})
-    page = int(args['page'])
-    per_page = int(args['per_page'])
+    page, per_page = helpers.paginate(args)
     techniques = technique_dao.find_all(page,per_page,'api.get_all_techniques')
     return jsonify(techniques)
 
@@ -26,14 +23,22 @@ def save_technique_details():
     new_technique = technique_dao.save(details)
     return jsonify(new_technique)
 
-@bp.route('/techniques/<int:technique_id>', methods=['DELETE'])
-def delete_technique_details(technique_id):
+@bp.route('/techniques/<int:id>', methods=['DELETE'])
+def delete_technique_details(id):
     return "delete technique"
 
-@bp.route('/techniques/<int:technique_id>', methods=['PATCH'])
-def update_technique_details(technique_id):
+@bp.route('/techniques/<int:id>', methods=['PATCH'])
+def update_technique_details(id):
     data = request.get_json(silent=False)
     if 'id' not in data:
-        data["id"] = technique_id
+        data["id"] = id
     updated_technique = technique_dao.update(data)
     return jsonify(updated_technique)
+
+@bp.route('/techniques/<int:id>/anaesthetics', methods=['GET'])
+def get_techniques_anaesthetics(id):
+    technique = Technique.query.get_or_404(id)
+    args = request.args
+    page, per_page = helpers.paginate(args)
+    anaesthetics = technique_dao.find_relations(technique.anaesthetic_id,page,per_page,'api.get_patient_operations', id=id)
+    return jsonify(anaesthetics)

@@ -10,7 +10,12 @@ def has_no_empty_params(rule):
 
 @app.route('/')
 def index():
-    return "hello, world"
+    data = jsonify({
+            "message": "hello, welcome to Bethel alpha v0.0 have fun breaking the app.",
+            "found-bugs": "please describe the actions you took and send the data you used so we can reproduce the bug. thank you!",
+            "site-map": url_for('site_map')
+        })
+    return data
 
 @app.route("/site-map")
 def site_map():
@@ -23,6 +28,9 @@ def site_map():
         for arg in rule.arguments:
             options[arg] = "[{0}]".format(arg)
 
+        if not 'filename' in options:
+            print (options)
+
         if "GET" in rule.methods and has_no_empty_params(rule):
             methods = ','.join(rule.methods)
             url = url_for(rule.endpoint, **options)
@@ -32,48 +40,10 @@ def site_map():
     # links is now a list of url, endpoint tuples
     return jsonify(output)
 
-
-# @app.route('/operations/<int:operation_id>', methods=['GET'])
-# def get_operation_record(operation_id):
-#     operation_obj = OperationRecord()
-#     record = operation_obj.find_one(operation_id)
-#     return jsonify(record)
-#
-# @app.route('/operations', methods=['GET'])
-# def get_operation_records():
-#     args = request.args
-#     if ('page' in args) and ('per_page' in args):
-#         page = int(args['page'])
-#         per_page = int(args['per_page'])
-#     else:
-#         return jsonify({'error': 'invalid pagination data'})
-#     operation_obj = OperationRecord()
-#     operations = operation_obj.find_all(page,per_page,'get_operation_records')
-#     return jsonify(operations)
-#     return jsonify({'error': 'invalid pagination data'})
-#
-# @app.route('/operations', methods=['POST'])
-# def save_operation_record():
-#     details = request.get_json(silent=False)
-#     if any(details):
-#         patient_obj = OperationRecord()
-#         new_operation = patient_obj.save(details['operation_data'])
-#         return jsonify(new_operation)
-#     else:
-#         return jsonify({'error': 'operation data cannot be empty'})
-#
-# @app.route('/operations/<int:operation_id>', methods=['PATCH'])
-# def update_operation_record(operation_id):
-#     # update_record()
-#     pass
-#     # data = request.get_json(silent=False)
-#     # if 'id' not in data:
-#     #     data["id"] = operation_id
-#     # if get_operation_record(patient_id):
-#     #     patient_obj = PatientDetails()
-#     #     updated_patient = patient_obj.update(data)
-#     #     return jsonify(updated_patient)
-#
-# @app.route('/operations/<int:operation_id>', methods=["DELETE"])
-# def delete_operation_record(operation_id):
-#     return jsonify({"error": "not allowed"})
+@app.errorhandler(404)
+@app.errorhandler(405)
+def _handle_api_error(ex):
+    if request.path.startswith('/api/'):
+        return jsonify({"error": "resources not found"})
+    else:
+        return ex

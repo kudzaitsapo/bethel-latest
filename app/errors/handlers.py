@@ -1,5 +1,6 @@
 from app.errors import bp
 from werkzeug.http import HTTP_STATUS_CODES
+from flask import jsonify
 
 @bp.route('/')
 def index():
@@ -15,3 +16,7 @@ def error_resposnse(status_code, message=None):
 
 def bad_request(messge):
     return error_resposnse(400, messge)
+
+@bp.errorhandler(404)
+def not_found():
+    return jsonify({"error": "resources not found"})

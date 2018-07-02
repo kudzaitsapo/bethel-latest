@@ -1,16 +1,73 @@
 {
     "_links": {
-        "self": "/operations/3"
+        "anaesthetic": "/api/anaesthetics/1",
+        "operative_record": "/api/operative-records/1",
+        "patient": "/api/patients/1",
+        "post_operative_record": "/api/post-operative-records/1",
+        "pre_operative_record": "/api/preoperative-records/1",
+        "reference": "/api/referals/1",
+        "self": "/api/operations/1",
+        "surgical_team": "/api/operations/1/surgical-team",
+        "theater": "/api/theaters/32232",
+        "vitals": "/api/operations/1/vitals"
     },
-    "anaesthetic_id": 18,
-    "date": "Thu, 04 Jan 2018 00:00:00 GMT",
+    "anaesthetic": {
+        "drug_id": null,
+        "end_time": "None",
+        "id": 1,
+        "start_time": "12:56:00",
+        "technique_id": null
+    },
+    "date": null,
     "end_time": "12:56:00",
-    "id": 3,
-    "operative_record_id": 37,
-    "patient_id": 2,
-    "post_operative_record_id": 18,
-    "pre_operative_record_id": 37,
-    "reference_id": 38,
-    "start_time": "12:56:00",
-    "theater_id": 32232
+    "id": 1,
+    "operative_record": {
+        "abnormal_reactions": "abnornal reactions",
+        "blood_pressure": "blood pressusure",
+        "color": "colour",
+        "id": 1,
+        "iv_therapy": "IV Therapy",
+        "posture": "posture",
+        "pulse_rate": null,
+        "reflexes": "relexes",
+        "skin": "skin"
+    },
+    "patient": {
+        "address": "Elmore",
+        "first_names": "john",
+        "gender": "m",
+        "id": 1,
+        "national_id": "elmc-12",
+        "phone": "01234567889",
+        "surname": "doe"
+    },
+    "post_operative_record": {
+        "complications": "complications",
+        "id": 1,
+        "instructions_to_ward": "instructions to ward",
+        "iv_therapy": "IV Therapy",
+        "sedation": "sedation"
+    },
+    "pre_operative_record": {
+        "blood_group": "blood group",
+        "blood_pressure": "blood pressure",
+        "blood_urea": null,
+        "cadiovascular_system": "cadiovascular system",
+        "drug_therapy": "drug therapy",
+        "haemoglobin": null,
+        "id": 1,
+        "mass": "46",
+        "pulse": "pulse",
+        "respiration": "respiration",
+        "respiratory_system": "respiratory system",
+        "temperature": "78",
+        "urine": "urine"
+    },
+    "reference": {
+        "id": 1,
+        "note": "note",
+        "patient_id": "patient id",
+        "referer_id": "refereer id"
+    },
+    "start_time": "12:56:00"
 }

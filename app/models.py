@@ -12,8 +12,6 @@ class ModelFactory():
     def make_model(make_model):
         return models_dictionary[make_model]()
 
-    # def print_dict(self):
-    #     print(models_dictionary.values())
 
 class DAO(object):
 
@@ -26,6 +24,9 @@ class DAO(object):
     def find_all(self, page, per_page, endpoint, **kwargs):
         return self.model.to_collection_dict(self.model.query, page, per_page, endpoint, **kwargs)
 
+    def find_relations(self, query, page, per_page, endpoint, **kwargs):
+        return self.model.to_collection_dict(query, page, per_page, endpoint, **kwargs)
+
     def save(self, data):
         # try:
         # if 'national_id' in data:
@@ -36,18 +37,40 @@ class DAO(object):
         # except: # add exception to error
         #     return {'message': 'oops failed to save patient details.'}
 
-    def update(self, data):
-        # try:
-        if 'id' in data:
-            if data['id'] is not '':
-                self.model = self.model.query.get_or_404(data['id'])
-                self.model = self.model.from_dict(data)
-                db.session.commit()
+
+    def save_or_update_list(self, data):
+        saved = []
+        for item in data['items']:
+            if 'id' not in reading:
+                new_item = self.model.commit(item)
+                saved.append(new_item)
             else:
-                return {'message': 'Patient ID cannot be empty.'}
+                item = self.model.update(item)
+                saved.append(item)
+        return saved
+
+    def commit(self, data):
+        model_obj = self.model.from_dict(data)
+        db.session.add(model_obj)
+        db.session.commit()
+        return model_obj.to_dict()
+
+    def update_list(self, data):
+        model_obj = self.model.query.get_or_404(data['id'])
+        model_obj = model_obj.from_dict(data)
+        db.session.commit()
+        return model_obj.to_dict()
+
+    def update(self, data):
+        if data['id'] is not '':
+            print(data['id'])
+            self.model = self.model.query.get_or_404(data['id'])
+            print(data['id'])
+            self.model = self.model.from_dict(data)
+            db.session.commit()
             return self.model.to_dict()
         else:
-            return {'message': 'Patient ID must be provided.'}
+            return {'message': 'ID cannot be empty.'}
         # except:# add exception to error
         #     return {'message': 'Oops failed to update patient details.'}
 
@@ -81,10 +104,6 @@ class PaginateAPI(object):
             return {'error': 'page {} out of bound'.format(page)}
         return data
 
-'''
-    __TODO_
-    ** add __deletion__ funtionality
-'''
 
 surgical_team = db.Table('surgical_team',
                          db.Column('practitioner_id', db.Integer,
@@ -96,31 +115,29 @@ surgical_team = db.Table('surgical_team',
                          )
 
 
-class Prescription(db.Model):
+class Prescription(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ordered_by = db.Column(
         db.Integer, db.ForeignKey('practitioner_details.id'))
     patient_id = db.Column(db.Integer, db.ForeignKey('patient_details.id'))
     details = db.Column(db.Text)
 
-    def __init__(self, **kwargs):
-        super(Prescription, self).__init__(**kwargs)
-        # do custom initialization here
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<Prescription {}>'.format(self.id)
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            'ordered_by': self.ordered_by,
-            'patient_id': self.patient_id,
-            'details': self.details,
-            '_links': {
-                'self': url_for('api.get_prescription_details', id=self.id)
-            }
+            'ordered_by': PractitionerDetails.query.get(self.ordered_by).to_dict(load_links=False),
+            'patient_id': PatientDetails.query.get(self.patient_id).to_dict(load_links=False),
+            'details': self.details
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_prescription_details', id=self.id),
+                'ordered_by': url_for('api.get_practitioner_details', id=self.ordered_by),
+                'patient': url_for('api.get_patient_details', id=self.patient_id)
+            }
         return data
 
     def from_dict(self, data):
@@ -130,30 +147,29 @@ class Prescription(db.Model):
         return self
 
 
-class Referal(db.Model):
+class Referal(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     referer_id = db.Column(
         db.Integer, db.ForeignKey('practitioner_details.id'))
     patient_id = db.Column(db.Integer, db.ForeignKey('patient_details.id'))
     note = db.Column(db.Text)
 
-    def __init__(self, **kwargs):
-        super(Referal, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<Referal {}>'.format(self.id)
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            'referer_id': self.referer_id,
-            'patient_id': self.patient_id,
-            'note': self.note,
-            '_links': {
-                'self': url_for('api.get_referal_details', id=self.id)
-            }
+            # 'referer_id': PractitionerDetails.query.get(self.referer_id).to_dict(load_links=False),
+            # 'patient_id': PatientDetails.query.get(self.patient_id).to_dict(load_links=False),
+            'note': self.note
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_referal_details', id=self.id)
+                # 'referred_by': url_for('api.get_practitioner_details', id=self.referer_id),
+                # 'patient':url_for('api.get_patient_details', id=self.patient_id)
+            }
         return data
 
     def from_dict(self, data):
@@ -163,7 +179,7 @@ class Referal(db.Model):
         return self
 
 
-class PractitionerDetails(db.Model):
+class PractitionerDetails(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_names = db.Column(db.String(64))
     surname = db.Column(db.String(64), index=True)
@@ -175,27 +191,32 @@ class PractitionerDetails(db.Model):
     prescriptions = db.relationship(
         'Prescription', lazy='dynamic', backref='prescriptions')
     doses = db.relation('PremedicationRecord', lazy='dynamic', backref='doses')
-
-    def __init__(self, **kwargs):
-        super(PractitionerDetails, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
+    surguries = db.relationship(
+        'OperationRecord', secondary=surgical_team,
+        lazy='dynamic', backref=db.backref('surgeries', lazy='dynamic'))
 
     def __repr__(self):
         return '<Practitioner {}>'.format(self.id)
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
             'first_names': self.first_names,
             'surname': self.surname,
             'gender': self.gender,
-            # 'occupatoin': self.occupatoin,
+            'occupation': Occupation.query.get(self.occupation_id).to_dict(load_links=False),
             'phone': self.phone,
-            'address': self.address,
-            '_links': {
-                'self': url_for('api.get_practitioner_details', id=self.id)
-            }
+            'address': self.address
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_practitioner_details', id=self.id),
+                'occupation': url_for('api.get_occupation_details', id=self.occupation_id),
+                'referrees': url_for('api.get_practitioner_referrees',  id=self.id),
+                'prescriptions': url_for('api.get_practitioner_prescriptions', id=self.id),
+                'surgeries': url_for('api.get_practitioner_operations', id=self.id),
+                'patients_dosed': url_for('api.get_practitioner_doses', id=self.id)
+            }
         return data
 
     def from_dict(self, data):
@@ -204,116 +225,117 @@ class PractitionerDetails(db.Model):
                 setattr(self, field, data[field])
             return self
 
-    def refere(self, patient_details):
-        self.referals.append(patient_details)
 
-
-class Occupation(db.Model):
+class Occupation(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(20), unique=True)
     practitioners = db.relationship(
         'PractitionerDetails', backref='qualification', lazy='dynamic')
 
-    def __init__(self, **kwargs):
-        super(Occupation, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<Occupation {}>'.format(self.tittle)
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            'title': self.title,
-            '_links': {
-                'self': url_for('api.get_occupation_details', id=self.id)
-            }
+            'title': self.title
         }
+        if load_links:
+            data['_links'] = {
+                # 'self': url_for('api.get_occupation_details', id=self.id),
+                # 'practitioners': url_for('api.get_occupation_practitioners', id=self.id)
+            }
+        return data
 
     def from_dict(self, data):
         if 'title' in data:
             setattr(self, title, data['title'])
+        return self
 
 
-class Hospital(db.Model):
+class Hospital(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, unique=True)
     wards = db.relationship('Ward', backref='hospital', lazy='dynamic')
 
-    def __init__(self, **kwargs):
-        super(Hospital, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<Hospital {}>'.format(self.name)
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            'name': self.name,
-            '_links': {
-                'self': url_for('api.get_hospital_details', id=self.id)
-            }
+            'name': self.name
         }
+        if load_links:
+            data['_links'] = {
+                # 'self': url_for('api.get_hospital_details', id=self.id),
+                # 'wards': url_for('api.get_hospital_wards', id=self.id)
+            }
+        return data
 
     def from_dict(self, data):
         if 'name' in data:
             setattr(self, name, data['name'])
+        return self
 
 
-class Ward(db.Model):
+class Ward(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
     hospital_id = db.Column(db.Integer, db.ForeignKey('hospital.id'))
     theaters = db.relationship('Theater', backref='ward', lazy='dynamic')
 
-    def __init__(self, **kwargs):
-        super(Ward, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(slef):
         return '<Ward {}>'.format(self.name)
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
             'title': self.name,
-            '_links': {
-                'self': url_for('api.get_ward_details', id=self.id)
-            }
+            'hospital': hospital.query.get(self.hospital_id).to_dict(load_links=False)
         }
+        if load_links:
+            data['_links'] = {
+                # 'self': url_for('api.get_ward_details', id=self.id),
+                # 'hospital': url_for('api.get_hospital_details', id=self.hospital_id),
+                # 'theaters': url_for('api.get_ward_theaters', id=self.id)
+            }
+        return data
 
     def from_dict(self, data):
         if 'title' in data:
             setattr(self, name, data['name'])
+        return self
 
 
-class Theater(db.Model):
+class Theater(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
     ward_id = db.Column(db.Integer, db.ForeignKey('ward.id'))
     operations = db.relationship(
         'OperationRecord', backref='Theater', lazy='dynamic')
 
-    def __init__(self, **kwargs):
-        super(Theater, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<Theater {}>'.format(self.name)
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            'title': self.name,
-            '_links': {
-                'self': url_for('api.get_theater_details', id=self.id)
-            }
+            'title': self.name
+            # 'ward': Ward.query.get(self.ward_id).to_dict(load_links=False)
         }
+        if load_links:
+            data['_links'] = {
+                # 'self': url_for('api.get_theater_details', id=self.id),
+                # 'ward': url_for('api.get_ward_details', id=self.ward_id),
+                # 'operations': url_for('api.get_theater_operations', id=self.id)
+            }
+        return data
 
     def from_dict(self, data):
         if 'title' in data:
             setattr(self, name, data['name'])
+        return self
 
 
 class PatientDetails(PaginateAPI, db.Model):
@@ -330,18 +352,10 @@ class PatientDetails(PaginateAPI, db.Model):
     medication = db.relationship(
         'Prescription', lazy='dynamic', backref='medication')
 
-    def __init__(self, **kwargs):
-        super(PatientDetails, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
-    # def find_all(self, page, per_page, endpoint, **kwargs):
-    #     return self.to_collection_dict(self.query, page, per_page, endpoint, **kwargs)
-
     def __repr__(self):
         return '<Patient {}>'.format(self.national_id)
 
-    def to_dict(self):
-        # 'national_id' if 'national_id' in kwargs: self.national_id
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
             'national_id': self.national_id,
@@ -349,13 +363,14 @@ class PatientDetails(PaginateAPI, db.Model):
             'surname': self.surname,
             'gender': self.gender,
             'address': self.address,
-            'phone': self.phone,
-            '_links': {
-                'self': url_for('api.get_patient_details', patient_id=self.id)
-                # 'operatoin_records': url_for('app.get_patient_details', patient_id=self.id),
-                # 'medication': url_for('app.get_medications', patient_id=self.id)
-            }
+            'phone': self.phone
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_patient_details', id=self.id),
+                'operation_records': url_for('api.get_patient_operations', id=self.id),
+                'prescriptions': url_for('api.get_patient_prescriptions', id=self.id)
+            }
         return data
 
     def from_dict(self, data):
@@ -405,136 +420,37 @@ class OperationRecord(PaginateAPI, db.Model):
     def find_all(self, page, per_page, endpoint, **kwargs):
         return self.to_collection_dict(self.query, page, per_page, endpoint, **kwargs)
 
-    def save(self, data):
-
-        if 'patient_id' not in data:
-            patient_details_obj = PatientDetails()
-            patient = patient_details_obj.save(
-                data['patient_details_data'])
-            data['patient_id'] = patient['id']
-
-        if 'reference_id' not in data:
-            referal_obj = Referal()
-            reference = referal_obj.save(data['referal_data'])
-            data['reference_id'] = reference['id']
-
-        if 'pre_operative_record_id' not in data:
-            pre_operative_record_obj = PreOperativeRecord()
-            record = pre_operative_record_obj.save(data['pre_operative_data'])
-            data['pre_operative_record_id'] = record['id']
-
-            if 'attachment_data' in data['pre_operative_data']:
-                attachment_data = data['pre_operative_data']['attachment_data']
-                attachment_data['pre_operative_record_id'] = record['id']
-                attachment_obj = Attachment()
-                file_record = attachment_obj.save(attachment_data)
-
-            if 'premedication_data' in data['pre_operative_data']:
-                premedication_data = data[
-                    'pre_operative_data']['premedication_data']
-                premedication_data['pre_operative_record_id'] = record['id']
-                premedication_record_obj = PremedicationRecord()
-                premedication = premedication_record_obj.save(
-                    premedication_data)
-
-        if 'operative_record_id' not in data:
-            operative_record_obj = OperativeRecord()
-            record = operative_record_obj.save(data['operative_data'])
-            data['operative_record_id'] = record['id']
-
-        if 'anaesthetic_id' not in data:
-            anaesthetic_obj = Anaesthetic()
-            anaesthetic = anaesthetic_obj.save(data['anaesthetic_data'])
-            data['anaesthetic_id'] = anaesthetic['id']
-
-        if 'post_operative_record_id' not in data:
-            post_operative_record_obj = PostOperativeRecord()
-            record = post_operative_record_obj.save(
-                data['post_operative_data'])
-            data['post_operative_record_id'] = record['id']
-        # try:
-        self = self.from_dict(data)
-        db.session.add(self)
-        db.session.commit()
-        vitals_data = data['vitals_data']
-        vitals_data['operation_record_id'] = self.id
-        vitals_record_obj = VitalsRecord()
-        vitals = vitals_record_obj.save(vitals_data)
-        if 'surgical_team' in data:
-            surgical_team_data = data['surgical_team']
-            self.add_team(self.id, surgical_team_data)
-        return self.to_dict()
-        # except: # add exception to error
-        #     return {'message': 'oops failed to save operation record'}
-
-    def update(self, data):
-        if 'id' in data:
-            if 'patient_details_data' in data:
-                patient_details_obj = PatientDetails()
-                patient_details_obj.update(
-                    data['patient_details_data'])
-            if 'referal_data' in data:
-                referal_obj = Referal()
-                reference = referal_obj.update(
-                    data['referal_data'])
-                data['reference_id'] = reference['id']
-            if 'pre_operative_data' in data:
-                pre_operative_record_obj = PreOperativeRecord()
-                record = pre_operative_record_obj.update(
-                    data['pre_operative_data'])
-                data['pre_operative_record_id'] = record['id']
-            if 'operative_data' in data:
-                operative_record_obj = OperativeRecord()
-                record = operative_record_obj.update(
-                    data['operative_data'])
-                data['operative_record_id'] = record['id']
-            if 'post_operative_data' in data:
-                post_operative_record_obj = PostOperativeRecord()
-                record = post_operative_record_obj.update(
-                    data['post_operative_data'])
-                data['post_operative_record_id'] = record['id']
-            if 'anaesthetic_data' in data:
-                anaesthetic_obj = Anaesthetic()
-                anaesthetic = anaesthetic_obj.update(
-                    data['anaesthetic_data'])
-                data['anaesthetic_id'] = anaesthetic['id']
-            if 'vitals_data' in data:
-                vitals_data = data['vitals_data']
-                vitals_data['operation_record_id'] = data['id']
-                vitals_record_obj = VitalsRecord()
-                vitals = vitals_record_obj.save(
-                    vitals_data)
-            self = self.query.get_or_404(data['id'])
-            self = self.from_dict(data)
-            db.session.commit()
-            if 'surgical_team' in data:
-                surgical_team_data = data['surgical_team']
-                self.add_team(self.id, surgical_team_data)
-            return self.to_dict()
-        else:
-            return {'error': 'id cannot be empty'}
-
     def delete_record(self):
         return {'error': 'Prohibited!'}
 
-    def to_dict(self):
-        pd = PatientDetails()
+    def to_dict(self, load_links=True):
+        # print(self.patient_id)
         data = {
             'id': self.id,
-            'patient_id': self.patient_id,
-            'reference_id': self.reference_id,
-            'theater_id': self.theater_id,
+            'patient': PatientDetails.query.get(self.patient_id).to_dict(load_links=False),
+            'referal': Referal.query.get(self.reference_id).to_dict(load_links=False),
+            # 'theater_id': Theater.query.get_or_404(self.theater_id).to_dict(load_links=False),
             'date': self.date,
             'start_time': str(self.start_time),
             'end_time': str(self.end_time),
-            'pre_operative_record_id': self.pre_operative_record_id,
-            'operative_record_id': self.operative_record_id,
-            'post_operative_record_id': self.post_operative_record_id,
-            'anaesthetic_id': self.anaesthetic_id,
-            '_links': {
-                'self': url_for('api.get_operation_record', operation_id=self.id)
-            }
+            'pre_operative_record': PreOperativeRecord.query.get(self.pre_operative_record_id).to_dict(load_links=False),
+            'operative_record': OperativeRecord.query.get(self.operative_record_id).to_dict(load_links=False),
+            'post_operative_record': PostOperativeRecord.query.get(self.post_operative_record_id).to_dict(load_links=False) ,
+            'anaesthetic': Anaesthetic.query.get(self.anaesthetic_id).to_dict(load_links=False)
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_operation_record_details', id=self.id),
+                'vitals': url_for('api.get_operation_vitals', id=self.id),
+                'surgical_team': url_for('api.get_operation_surgical_team', id=self.id),
+                'theater': url_for('api.get_theater_details', id=self.theater_id),
+                'patient': url_for('api.get_patient_details', id=self.patient_id),
+                'anaesthetic': url_for('api.get_anaesthetic_details', id=self.anaesthetic_id),
+                'operative_record': url_for('api.get_operative_record_details', id=self.operative_record_id),
+                'post_operative_record': url_for('api.get_post_operative_record_details', id=self.post_operative_record_id),
+                'pre_operative_record': url_for('api.get_preoperative_record_details', id=self.pre_operative_record_id),
+                'reference': url_for('api.get_referal_details', id=self.reference_id)
+            }
         return data
 
     def from_dict(self, data):
@@ -557,7 +473,7 @@ class OperationRecord(PaginateAPI, db.Model):
         return self
 
 
-class PreOperativeRecord(db.Model):
+class PreOperativeRecord(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     mass = db.Column(db.String)
     temperature = db.Column(db.String)
@@ -576,31 +492,10 @@ class PreOperativeRecord(db.Model):
     premedication = db.relationship(
         'PremedicationRecord', backref='preoperative_record', lazy='dynamic')
 
-    def __init__(self, **kwargs):
-        super(PreOperativeRecord, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<preoperative_record {}>'.format(self.id)
 
-    def update(self, data):
-        if 'id' in data:
-            if 'attachment_data' in data:
-                attachment_obj = Attachment()
-                attachment = attachment_obj.update(
-                    data['attachment_data'])
-            if 'premedication_data' in data:
-                premedication_record_obj = PremedicationRecord()
-                record = premedication_record_obj.update(
-                    data['premedication_data'])
-            self = self.query.get_or_404(data['id'])
-            self = self.from_dict(data)
-            db.session.commit()
-        else:
-            return {'error': 'id connot be null'}
-        return self.to_dict()
-
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
             'mass': self.mass,
@@ -615,11 +510,15 @@ class PreOperativeRecord(db.Model):
             'haemoglobin': self.haemoglobin,
             'blood_urea': self.blood_urea,
             'blood_pressure': self.blood_pressure,
-            'drug_therapy': self.drug_therapy,
-            '_links': {
-                'self': url_for('api.get_preoperative_record_details', id=self.id)
-            }
+            'drug_therapy': self.drug_therapy
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_preoperative_record_details', id=self.id),
+                'attachments': url_for('api.get_preoperative_records_attachments', id=self.id),
+                'premedication': url_for('api.get_preoperative_records_premedication', id=self.id),
+                'operation': url_for('api.get_operation_record_details',id=OperationRecord.query.filter_by(pre_operative_record_id=self.id).first().id)
+            }
         return data
 
     def from_dict(self, data):
@@ -635,39 +534,27 @@ class PreOperativeRecord(db.Model):
         return self
 
 
-class Attachment(db.Model):
+class Attachment(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String(120))
     file_type = db.Column(db.String(6))
     pre_operative_record_id = db.Column(
         db.Integer, db.ForeignKey('pre_operative_record.id'))
 
-    def __init__(self, **kwargs):
-        super(Attachment, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<Attachments {}>'.format(self.id)
 
-    def update(self, data):
-        if 'id' in data:
-            self = self.query.get_or_404(data['id'])
-            self = self.from_dict(data)
-            db.session.commit()
-        else:
-            return {'error': 'id connot be null'}
-        return self.to_dict()
-
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
             'url': self.url,
-            'file_type': self.file_type,
-            'pre_operative_record_id': self.pre_operative_record_id,
-            '_links': {
-                'self': url_for('api.get_attachments_details', id=self.id)
-            }
+            'file_type': self.file_type
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_attachments_details', id=self.id),
+                'pre_operative_record': url_for('api.get_preoperative_record_details', id=self.pre_operative_record_id)
+            }
         return data
 
     def from_dict(self, data):
@@ -677,7 +564,7 @@ class Attachment(db.Model):
         return self
 
 
-class PremedicationRecord(db.Model):
+class PremedicationRecord(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     prescription_id = db.Column(db.Integer, db.ForeignKey('prescription.id'))
     time_given = db.Column(db.Time)
@@ -685,49 +572,21 @@ class PremedicationRecord(db.Model):
     pre_operative_record_id = db.Column(
         db.Integer, db.ForeignKey('pre_operative_record.id'))
 
-    def __init__(self, **kwargs):
-        super(PremedicationRecord, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<Premedication {}>'.format(self.id)
 
-    def save(self, data):
-        # Save prescription
-        if 'prescription_data' in data:
-            prescription_data = data['prescription_data']
-            prescription_obj = Prescription()
-            prescription = prescription_obj.save(prescription_data)
-            data['prescription_id'] = prescription['id']
-        self = self.from_dict(data)
-        db.session.add(self)
-        db.session.commit()
-        return self.to_dict()
-
-    def update(self, data):
-        if 'id' in data:
-            if 'prescription_data' in data:
-                prescription_obj = Prescription()
-                prescription = prescription_obj.update(data['prescription_data'])
-                data['prescription_id'] = prescription['id']
-            self = self.query.get_or_404(data['id'])
-            self = self.from_dict(data)
-            db.session.commit()
-        else:
-            return {'error': 'id connot be null'}
-        return self.to_dict()
-
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
             'prescription_id': self.prescription_id,
             'time_given': str(self.time_given),
-            'given_by': self.given_by,
-            'pre_operative_record_id': self.pre_operative_record_id,
-            '_links': {
-                'self': url_for('api.get_premedication_record_details', id=self.id)
-            }
+            'given_by': self.given_by
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_premedication_record_details', id=self.id),
+                'pre_operative_record': url_for('api.get_preoperative_record_details', id=self.pre_operative_record_id)
+            }
         return data
 
     def from_dict(self, data):
@@ -742,31 +601,31 @@ class PremedicationRecord(db.Model):
         return self
 
 
-class Anaesthetic(db.Model):
+class Anaesthetic(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
     drug_id = db.Column(db.Integer, db.ForeignKey('drug.id'))
     technique_id = db.Column(db.Integer, db.ForeignKey('technique.id'))
 
-    def __init__(self, **kwargs):
-        super(Anaesthetic, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<Anaesthetic {}>'.format(self.id)
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
             'start_time': str(self.start_time),
             'end_time': str(self.end_time),
-            'drug_id': self.drug_id,
-            'technique_id': self.technique_id,
-            '_links': {
-                # 'self': url_for('api.get_anaesthetic_details', id=self.id)
-            }
+            # 'drug': Drug.query.get(self.drug_id).to_dict(load_links=False),
+            # 'technique': Technique.query.get(self.technique_id).to_dict(load_links=False),
+            'operation': url_for('api.get_operation_record_details',id=OperationRecord.query.filter_by(anaesthetic_id=self.id).first().id)
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_anaesthetic_details', id=self.id)
+                # 'drug' : url_for('api.get_drug_details', id=self.drug_id),
+                # 'technique': url_for('api.get_technique_details', id=self.technique_id)
+            }
         return data
 
     def from_dict(self, data):
@@ -781,88 +640,85 @@ class Anaesthetic(db.Model):
         return self
 
 
-class Drug(db.Model):
+class Drug(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, unique=True)
     anaesthetics = db.relationship(
         'Anaesthetic', backref='drug', lazy='dynamic')
 
-    def __init__(self, **kwargs):
-        super(Drug, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<Drug {}>'.format(self.name)
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            'name': self.anaesthetist,
-            '_links': {
-                'self': url_for('api.get_drug_details', id=self.id)
-            }
+            'name': self.name
         }
+        if load_links:
+            data['_links'] =  {
+                'self': url_for('api.get_drug_details', id=self.id),
+                'anaesthetics': url_for('api.get_drugs_anaesthetics', id=self.id)
+            }
 
     def from_dict(self, data):
         if 'name' in data:
             setattr(self, name, data['name'])
+        return self
 
 
-class Technique(db.Model):
+class Technique(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, unique=True)
     description = db.Column(db.String(64))
     anaesthetic_id = db.relationship(
         'Anaesthetic', backref='technique', lazy='dynamic')
 
-    def __init__(self, **kwargs):
-        super(Technique, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<Technique {}>'.format(self.name)
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
             'name': self.name,
-            'description': self.description,
-            '_links': {
-                'self': url_for('api.get_technique_details', id=self.id)
-            }
+            'description': self.description
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_technique_details', id=self.id),
+                'anaesthetics': url_for('api.get_techniques_anaesthetics', id=self.id)
+            }
+        return data
 
     def from_dict(self, data):
         for field in ['name', 'description']:
             if field in data:
                 setattr(self, field, data[field])
+        return self
 
 
-class PostOperativeRecord(db.Model):
+class PostOperativeRecord(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     instructions_to_ward = db.Column(db.String)
     iv_therapy = db.Column(db.String)
     sedation = db.Column(db.String)
     complications = db.Column(db.String)
 
-    def __init__(self, **kwargs):
-        super(PostOperativeRecord, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<PostOperativeRecord {}>'.format(self.id)
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
             'instructions_to_ward': self.instructions_to_ward,
             'iv_therapy': self.iv_therapy,
             'sedation': self.sedation,
-            'complications': self.complications,
-            '_links': {
-                'self': url_for('api.get_post_operative_record_details', id=self.id)
-            }
+            'complications': self.complications
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_post_operative_record_details', id=self.id),
+                'operation': url_for('api.get_operation_record_details',id=OperationRecord.query.filter_by(post_operative_record_id=self.id).first().id)
+            }
         return data
 
     def from_dict(self, data):
@@ -875,7 +731,7 @@ class PostOperativeRecord(db.Model):
         return self
 
 
-class VitalsRecord(db.Model):
+class VitalsRecord(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     heart_rate = db.Column(db.String)
     oxygen = db.Column(db.String)
@@ -883,52 +739,23 @@ class VitalsRecord(db.Model):
     time = db.Column(db.Time)
     operation_record_id = db.Column(db.Integer, db.ForeignKey('operation_record.id'))
 
-    def __init__(self, **kwargs):
-        super(VitalsRecord, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<Vitals {}>'.format(self.id)
 
-    def save(self, data):
-        saved = []
-        for reading in data['readings']:
-            reading['operation_record_id'] = data['operation_record_id']
-            if 'id' not in reading:
-                vital_reading = self.commit(reading)
-                saved.append(vital_reading)
-            else:
-                vital_reading = self.update(reading)
-                saved.append(vital_reading)
-        # print(saved)
-        return saved
-
-    def commit(self, data):
-        vital_obj = VitalsRecord()
-        vital_obj = vital_obj.from_dict(data)
-        db.session.add(vital_obj)
-        db.session.commit()
-        return vital_obj.to_dict()
-
-    def update(self, data):
-        vital_obj = VitalsRecord()
-        vital_obj = vital_obj.query.get_or_404(data['id'])
-        vital_obj = vital_obj.from_dict(data)
-        db.session.commit()
-        return vital_obj.to_dict()
-
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
             'heart_rate': self.heart_rate,
             'oxygen': self.oxygen,
             'blood_pressure': self.blood_pressure,
             'time': str(self.time),
-            'operation_record_id': self.operation_record_id,
-            '_links': {
-                'self': url_for('api.get_vitals_record_details', id=self.id)
-            }
+            'operation_record_id': self.operation_record_id
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_vitals_record_details', id=self.id),
+                'operation': url_for('api.get_operation_record_details', id=self.operation_record_id)
+            }
         return data
 
     def from_dict(self, data):
@@ -946,7 +773,7 @@ class VitalsRecord(db.Model):
         return self
 
 
-class OperativeRecord(db.Model):
+class OperativeRecord(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     posture = db.Column(db.String)
     iv_therapy = db.Column(db.String)
@@ -957,15 +784,11 @@ class OperativeRecord(db.Model):
     pulse_rate = db.Column(db.String)
     abnormal_reactions = db.Column(db.String)
 
-    def __init__(self, **kwargs):
-        super(OperativeRecord, self).__init__(**kwargs)
-        models_dictionary[type(self).__name__] = type(self)
-
     def __repr__(self):
         return '<OperativeRecord {}>'.format(self.id)
 
 
-    def to_dict(self):
+    def to_dict(self, load_links=True):
         data = {
             'id': self.id,
             'posture': self.posture,
@@ -975,11 +798,13 @@ class OperativeRecord(db.Model):
             'reflexes': self.reflexes,
             'blood_pressure': self.blood_pressure,
             'pulse_rate': self.pulse_rate,
-            'abnormal_reactions': self.abnormal_reactions,
-            '_links': {
-                'self': url_for('api.get_operative_record_details', id=self.id)
-            }
+            'abnormal_reactions': self.abnormal_reactions
         }
+        if load_links:
+            data['_links'] = {
+                'self': url_for('api.get_operative_record_details', id=self.id),
+                'operation': url_for('api.get_operation_record_details',id=OperationRecord.query.filter_by(operative_record_id=self.id).first().id)
+            }
         return data
 
     def from_dict(self, data):

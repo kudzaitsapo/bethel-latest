@@ -14,6 +14,7 @@ class DAOCase(unittest.TestCase):
 
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        self.app = app.test_client()
         db.create_all()
         self.alan = PatientDetails(first_names='alan', national_id='rqwerrr1rq')
         self.chris = PatientDetails(first_names='chris', national_id='rqwerrr2rq')
@@ -63,6 +64,7 @@ class PractitionerDetailsModelCase(unittest.TestCase):
 
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        self.app = app.test_client()
         db.create_all()
 
     def tearDown(self):
@@ -93,7 +95,7 @@ class PractitionerDetailsModelCase(unittest.TestCase):
         db.session.add_all([p1, p2, p3])
         db.session.commit()
         self.assertEqual(p2.occupation_id, 2)
-        self.assertEqual(o2.practioners.count(), 2)
+        self.assertEqual(o2.practitioners.count(), 2)
 
     def test_referals(self):
         patient1 = PatientDetails(first_names='Chris', national_id='rqwerrr1rq')
@@ -230,6 +232,7 @@ class OperationRecordModelCase(unittest.TestCase):
 
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        self.app = app.test_client()
         db.create_all()
         self.alan = PatientDetails(first_names='alan', national_id='r45354q')
         db.session.add(self.alan)
@@ -267,7 +270,7 @@ class OperationRecordModelCase(unittest.TestCase):
         p1 = PractitionerDetails(first_names='Chris')
         p2 = PractitionerDetails(first_names='Moris')
         db.session.add_all([p1, p2])
-        anaesthetic_obj = Anaesthetic()
+        anaesthetic_obj = DAO(Anaesthetic())
         anaesthetic = anaesthetic_obj.save({'drug_id': 2})
         self.operation_data = {
                         'theater_id': '32232',
@@ -367,7 +370,7 @@ class OperationRecordModelCase(unittest.TestCase):
         p1 = PractitionerDetails(first_names='Chris')
         p2 = PractitionerDetails(first_names='Moris')
         db.session.add_all([p1, p2])
-        anaesthetic_obj = Anaesthetic()
+        anaesthetic_obj = DAO(Anaesthetic())
         anaesthetic = anaesthetic_obj.save({'drug_id': 2})
         self.operation_data = {
                         'theater_id': '32232',

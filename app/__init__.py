@@ -12,7 +12,7 @@ from app.api import bp as api_bp
 from app.errors import bp as errors_bp
 
 app.register_blueprint(api_bp, url_prefix="/api")
-app.register_blueprint(errors_bp, url_prefix="/errors")
+app.register_blueprint(errors_bp, url_prefix="/api/errors")
 
 from app import routes, models, errors
 from app.api import *

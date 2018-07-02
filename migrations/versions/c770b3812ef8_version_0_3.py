@@ -1,8 +1,8 @@
-"""fiv0.3
+"""version 0.3
 
-Revision ID: 3b7dd9ee4338
+Revision ID: c770b3812ef8
 Revises: 
-Create Date: 2018-06-29 11:50:39.965607
+Create Date: 2018-06-30 21:09:48.333326
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '3b7dd9ee4338'
+revision = 'c770b3812ef8'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -69,8 +69,8 @@ def upgrade():
     )
     op.create_table('pre_operative_record',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('mass', sa.Float(), nullable=True),
-    sa.Column('temperature', sa.Float(), nullable=True),
+    sa.Column('mass', sa.String(), nullable=True),
+    sa.Column('temperature', sa.String(), nullable=True),
     sa.Column('pulse', sa.String(), nullable=True),
     sa.Column('respiration', sa.String(), nullable=True),
     sa.Column('respiratory_system', sa.String(), nullable=True),
@@ -188,11 +188,11 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('surgical_team',
-    sa.Column('practioner_id', sa.Integer(), nullable=False),
+    sa.Column('practitioner_id', sa.Integer(), nullable=False),
     sa.Column('operation_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['operation_id'], ['operation_record.id'], ),
-    sa.ForeignKeyConstraint(['practioner_id'], ['practitioner_details.id'], ),
-    sa.PrimaryKeyConstraint('practioner_id', 'operation_id')
+    sa.ForeignKeyConstraint(['practitioner_id'], ['practitioner_details.id'], ),
+    sa.PrimaryKeyConstraint('practitioner_id', 'operation_id')
     )
     op.create_table('vitals_record',
     sa.Column('id', sa.Integer(), nullable=False),
