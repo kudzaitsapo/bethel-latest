@@ -1,16 +1,7 @@
 from app import db
-from flask import url_for
+from flask import url_for, abort
 from dateutil import parser
 from datetime import datetime
-
-global models_dictionary
-models_dictionary = {}
-
-class ModelFactory():
-
-    @staticmethod
-    def make_model(make_model):
-        return models_dictionary[make_model]()
 
 class DAO(object):
 
@@ -27,26 +18,31 @@ class DAO(object):
         return self.model.to_collection_dict(query, page, per_page, endpoint, **kwargs)
 
     def save(self, data):
-        # try:
-        # if 'national_id' in data:
-        self.model = self.model.from_dict(data)
-        db.session.add(self.model)
-        db.session.commit()
-        return self.model.to_dict()
-        # except: # add exception to error
-        #     return {'message': 'oops failed to save patient details.'}
+        try:
+            self.model = self.model.from_dict(data)
+            db.session.add(self.model)
+            db.session.commit()
+            return self.model.to_dict()
+        except:
+            db.session.rollback()
+            abort(400)
 
 
     def save_or_update_list(self, data):
         saved = []
-        for item in data['items']:
-            if 'id' not in reading:
-                new_item = self.model.commit(item)
-                saved.append(new_item)
-            else:
-                item = self.model.update(item)
-                saved.append(item)
-        return saved
+        try:
+            for item in data['items']:
+                if 'id' not in reading:
+                    new_item = self.model.commit(item)
+                    saved.append(new_item)
+                else:
+                    item = self.model.update(item)
+                    saved.append(item)
+            return saved
+        except:
+            db.session.rollback()
+            abort(400)
+
 
     def commit(self, data):
         model_obj = self.model.from_dict(data)
@@ -61,20 +57,23 @@ class DAO(object):
         return model_obj.to_dict()
 
     def update(self, data):
-        if data['id'] is not '':
-            print(data['id'])
-            self.model = self.model.query.get_or_404(data['id'])
-            print(data['id'])
-            self.model = self.model.from_dict(data)
-            db.session.commit()
-            return self.model.to_dict()
+        try:
+            if data['id'] is not '':
+                print(data['id'])
+                self.model = self.model.query.get_or_404(data['id'])
+                print(data['id'])
+                self.model = self.model.from_dict(data)
+                db.session.commit()
+                return self.model.to_dict()
+            else:
+                db.session.rollback()
+                return {'message': 'ID cannot be empty.'}
         else:
-            return {'message': 'ID cannot be empty.'}
-        # except:# add exception to error
-        #     return {'message': 'Oops failed to update patient details.'}
+            db.session.rollback()
+            abort(400)
 
     def delete(self, data):
-        return {'error': 'Prohibited!'}
+        abort(400)
 
 
 class PaginateAPI(object):
