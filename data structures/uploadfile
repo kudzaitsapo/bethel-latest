@@ -1,0 +1,6 @@
+curl --request POST \
+  --url http://localhost:5000/api/uploads \
+  --header 'cache-control: no-cache' \
+  --header 'content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' \
+  --header 'postman-token: 3de42fd5-ea0d-cff5-0342-f4aad5814936' \
+  --form file=@IMG_20180524_174307.jpg

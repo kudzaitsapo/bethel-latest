@@ -68,7 +68,7 @@ class DAO(object):
             else:
                 db.session.rollback()
                 return {'message': 'ID cannot be empty.'}
-        else:
+        except:
             db.session.rollback()
             abort(400)
 
@@ -213,7 +213,8 @@ class PractitionerDetails(PaginateAPI, db.Model):
                 'referrees': url_for('api.get_practitioner_referrees',  id=self.id),
                 'prescriptions': url_for('api.get_practitioner_prescriptions', id=self.id),
                 'surgeries': url_for('api.get_practitioner_operations', id=self.id),
-                'patients_dosed': url_for('api.get_practitioner_doses', id=self.id)
+                'patients_dosed': url_for('api.get_practitioner_doses', id=self.id),
+                'operatoins': url_for('api.get_operation_record_details',id=OperationRecord.query.filter_by(patient_id=self.id).first().id)
             }
         return data
 

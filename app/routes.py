@@ -1,6 +1,5 @@
 import urllib
 from app import app
-from app.models import PatientDetails, OperationRecord, PractitionerDetails
 from flask import jsonify, request, url_for
 
 def has_no_empty_params(rule):
@@ -27,9 +26,6 @@ def site_map():
         options = {}
         for arg in rule.arguments:
             options[arg] = "[{0}]".format(arg)
-
-        if not 'filename' in options:
-            print (options)
 
         if "GET" in rule.methods and has_no_empty_params(rule):
             methods = ','.join(rule.methods)
