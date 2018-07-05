@@ -1,4 +1,4 @@
-from app.api import bp, helpers
+from app.api import bp, helpers, cache
 from app.models import Theater, DAO
 from flask import jsonify, request
 from flask.views import MethodView
@@ -7,8 +7,14 @@ theater_dao = DAO(Theater())
 
 @bp.route('/theaters/<int:id>', methods=['GET'])
 def get_theater_details(id):
-    theater = theater_dao.find_one(id)
-    return jsonify(theater)
+    path = request.path
+    cached = cache.redis.get(path)
+    if not cached:
+        theater = theater_dao.find_one(id)
+        cache.set_url_cache(path, theater)
+        return jsonify(theater)
+    else:
+        return jsonify(cache.get_url_cache(cached))
 
 @bp.route('/theaters', methods=['GET'])
 def get_all_theaters():
@@ -21,6 +27,8 @@ def get_all_theaters():
 def save_theater_details():
     details = request.get_json(silent=False)
     new_theater = theater_dao.save(details)
+    path = new_theater['_links']['self']
+    cache.set_url_cache(path, new_theater)
     return jsonify(new_theater)
 
 @bp.route('/theaters/<int:id>', methods=['DELETE'])
@@ -29,10 +37,12 @@ def delete_theater_details(id):
 
 @bp.route('/theaters/<int:id>', methods=['PATCH'])
 def update_theater_details(id):
+    path = request.path
     data = request.get_json(silent=False)
     if 'id' not in data:
         data["id"] = id
     updated_theater = theater_dao.update(data)
+    cache.set_url_cache(path, updated_theater)
     return jsonify(updated_theater)
 
 @bp.route('/theaters/<int:id>/operations', methods=['GET'])

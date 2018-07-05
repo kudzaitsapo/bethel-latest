@@ -1,4 +1,4 @@
-from app.api import bp, helpers
+from app.api import bp, helpers, cache
 from app.models import PreOperativeRecord, DAO
 from flask import jsonify, request
 from flask.views import MethodView
@@ -7,8 +7,14 @@ preoperative_record_dao = DAO(PreOperativeRecord())
 
 @bp.route('/preoperative-records/<int:id>', methods=['GET'])
 def get_preoperative_record_details(id):
-    preoperative_record = preoperative_record_dao.find_one(id)
-    return jsonify(preoperative_record)
+    path = request.path
+    cached = cache.redis.get(path)
+    if not cached:
+        preoperative_record = preoperative_record_dao.find_one(id)
+        cache.set_url_cache(path, preoperative_record)
+        return jsonify(preoperative_record)
+    else:
+        return jsonify(cache.get_url_cache(cached))
 
 @bp.route('/preoperative-records', methods=['GET'])
 def get_all_preoperative_records():
@@ -21,6 +27,8 @@ def get_all_preoperative_records():
 def save_preoperative_record_details():
     details = request.get_json(silent=False)
     new_preoperative_record = preoperative_record_dao.save(details)
+    path = new_preoperative_record['_links']['self']
+    cache.set_url_cache(path, new_preoperative_record)
     return jsonify(new_preoperative_record)
 
 @bp.route('/preoperative-records/<int:id>', methods=['DELETE'])
@@ -29,10 +37,12 @@ def delete_preoperative_record_details(id):
 
 @bp.route('/preoperative-records/<int:id>', methods=['PATCH'])
 def update_preoperative_record_details(id):
+    path = request.path
     data = request.get_json(silent=False)
     if 'id' not in data:
         data["id"] = id
     updated_preoperative_record = preoperative_record_dao.update(data)
+    cache.set_url_cache(path, updated_preoperative_record)
     return jsonify(updated_preoperative_record)
 
 @bp.route('/preoperative-records/<int:id>/attachments', methods=['GET'])

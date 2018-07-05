@@ -1,11 +1,24 @@
+import redis
+import requests
 import urllib
 from app import app
 from flask import jsonify, request, url_for
+
+
 
 def has_no_empty_params(rule):
     defaults = rule.defaults if rule.defaults is not None else ()
     arguments = rule.arguments if rule.arguments is not None else ()
     return len(defaults) >= len(arguments)
+
+# @app.before_request
+# def check_cache():
+#     path = request.path
+#     cached = redis.get(path)
+#     if cached:
+#         return cached
+#     else:
+#         return requests.get("http://localhost:5000/"+path).content
 
 @app.route('/')
 def index():

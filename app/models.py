@@ -202,14 +202,14 @@ class PractitionerDetails(PaginateAPI, db.Model):
             'first_names': self.first_names,
             'surname': self.surname,
             'gender': self.gender,
-            'occupation': Occupation.query.get(self.occupation_id).to_dict(load_links=False),
+            # 'occupation': Occupation.query.get(self.occupation_id).to_dict(load_links=False),
             'phone': self.phone,
             'address': self.address
         }
         if load_links:
             data['_links'] = {
                 'self': url_for('api.get_practitioner_details', id=self.id),
-                'occupation': url_for('api.get_occupation_details', id=self.occupation_id),
+                # 'occupation': url_for('api.get_occupation_details', id=self.occupation_id),
                 'referrees': url_for('api.get_practitioner_referrees',  id=self.id),
                 'prescriptions': url_for('api.get_practitioner_prescriptions', id=self.id),
                 'surgeries': url_for('api.get_practitioner_operations', id=self.id),

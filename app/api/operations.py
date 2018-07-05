@@ -1,4 +1,4 @@
-from app.api import bp, helpers
+from app.api import bp, helpers, cache
 from app.models import OperationRecord, PatientDetails, Referal, \
                     PreOperativeRecord, Attachment, PremedicationRecord, \
                     OperationRecord, Anaesthetic, PostOperativeRecord, \
@@ -9,9 +9,15 @@ operation_dao = DAO(OperationRecord())
 
 @bp.route('/operations/<int:id>', methods=['GET'])
 def get_operation_record_details(id):
-    operation_dao = OperationRecord()
-    record = operation_dao.find_one(id)
-    return jsonify(record)
+    path = request.path
+    cached = cache.redis.get(path)
+    if not cached:
+        operation_dao = OperationRecord()
+        record = operation_dao.find_one(id)
+        cache.set_url_cache(path, record)
+        return jsonify(record)
+    else:
+        return jsonify(cache.get_url_cache(cached))
 
 @bp.route('/operations', methods=['GET'])
 def get_all_operation_records():
@@ -74,12 +80,15 @@ def save_operation_record():
             surgical_team_data = data['surgical_team']
             operation_dao.add_team(operation_dao.id, surgical_team_data)
             new_operation = operation_dao.to_dict()
+            path = new_operation['_links']['self']
+            cache.set_url_cache(path, new_operation)
         return jsonify(new_operation)
     else:
         return jsonify({'error': 'operation data cannot be empty'})
 
 @bp.route('/operations/<int:id>', methods=['PATCH'])
 def update_operation_record(id):
+    path = request.path
     data = request.get_json(silent=False)
     data = data['operation_data']
     if 'id' not in data:
@@ -160,6 +169,7 @@ def update_operation_record(id):
         surgical_team_data = data['surgical_team']
         record.add_team(self.id, surgical_team_data)
     updated_record = operation_dao.update(data)
+    cache.set_url_cache(path, updated_record)
     return jsonify(updated_record)
 
 @bp.route('/operations/<int:id>', methods=["DELETE"])

@@ -1,14 +1,19 @@
-from app.api import bp, helpers
+from app.api import bp, helpers, cache
 from app.models import Ward, DAO
 from flask import jsonify, request
-from flask.views import MethodView
 
 ward_dao = DAO(Ward())
 
 @bp.route('/wards/<int:id>', methods=['GET'])
 def get_ward_details(id):
-    ward = ward_dao.find_one(id)
-    return jsonify(ward)
+    path = request.path
+    cached = cache.redis.get(path)
+    if not cached:
+        ward = ward_dao.find_one(id)
+        cache.set_url_cache(path, ward)
+        return jsonify(ward)
+    else:
+        return jsonify(cache.get_url_cache(cached))
 
 @bp.route('/wards', methods=['GET'])
 def get_all_wards():
@@ -21,6 +26,8 @@ def get_all_wards():
 def save_ward_details():
     details = request.get_json(silent=False)
     new_ward = ward_dao.save(details)
+    path = new_ward['_links']['self']
+    cache.set_url_cache(path, new_ward)
     return jsonify(new_ward)
 
 @bp.route('/wards/<int:id>', methods=['DELETE'])
@@ -33,6 +40,7 @@ def update_ward_details(id):
     if 'id' not in data:
         data["id"] = id
     updated_ward = ward_dao.update(data)
+    cache.set_url_cache(path, updated_ward)
     return jsonify(updated_ward)
 
 @bp.route('/wards/<int:id>/theaters', methods=['GET'])
