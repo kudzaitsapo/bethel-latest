@@ -10,12 +10,12 @@ def error_resposnse(status_code, message=None):
     response.status_code = status_code
     return response
 
-# @app.errorhandler(400)
-# def bad_request(ex):
-#     if request.path.startswith('/api/'):
-#         return jsonify({"error": "Bad request.", "code":"400"})
-#     else:
-#         return ex
+@app.errorhandler(400)
+def bad_request(ex):
+    if request.path.startswith('/api/'):
+        return jsonify({"error": "Bad request.", "code":"400"})
+    else:
+        return ex
 
 @app.errorhandler(404)
 def not_found(ex):
