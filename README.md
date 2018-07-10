@@ -12,3 +12,5 @@ export FLASK_DEBUG=True
 ## Run
 flask run
 
+### Custom host and port
+flask run --host 0.0.0.0 --port 80

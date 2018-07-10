@@ -1,4 +1,5 @@
 from app import db
+from app.search import add_to_index, remove_form_index, query_index
 from flask import url_for, abort
 from dateutil import parser
 from datetime import datetime
@@ -74,6 +75,48 @@ class DAO(object):
 
     def delete(self, data):
         abort(400)
+
+
+class SearchableMixin(object):
+    @classmethod
+    def search(cls, expression, page, per_page):
+        ids, total = query_index(cls.__tablename__, expression, page, per_page)
+        if total == 0:
+            return cls.query.filter_by(id=0), 0
+        when = []
+        for i in range(len(ids)):
+            when.append((ids[i], i))
+        return cls.query.filer(cls.id.in_(ids)).order_by(
+            db.case(when, value=cls.id)), total
+
+    @classmethod
+    def before_commit(cls, session):
+        session._changes = {
+            'add': list(session.new),
+            'update': list(sessiom.dirty),
+            'delete': list(session.delete)
+        }
+
+    @classmethod
+    def after_commit(cls, session):
+        for obj in session._changes['add']:
+            if isinstance(obj, SearchableMixin):
+                add_to_index(obj.__tablename__, obj)
+        for obj in session._changes['update']:
+            if isinstance(obj, SearchableMixin):
+                add_to_index(obj.__tablename__, obj)
+        for obj in session._changes['delete']:
+            if isinstance(obj, SearchableMixin):
+                remove_form_index(obj.__tablename__, obj)
+        session_changes = None
+
+    @classmethod
+    def reindex(cls):
+        for obj in cls.query:
+            add_to_index(cls.__tablename__, obj)
+
+db.event.listen(db.session, 'before_commit', SearchableMixin.before_commit)
+db.event.listen(db.session, 'after_commit', SearchableMixin.after_commit)
 
 
 class PaginateAPI(object):
@@ -387,6 +430,7 @@ class OperationRecord(PaginateAPI, db.Model):
     patient_id = db.Column(db.Integer, db.ForeignKey('patient_details.id'))
     reference_id = db.Column(db.Integer, db.ForeignKey('referal.id'))
     theater_id = db.Column(db.Integer, db.ForeignKey('theater.id'))
+    name = db.Column(db.String(100))
     date = db.Column(db.Date)
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
@@ -429,6 +473,7 @@ class OperationRecord(PaginateAPI, db.Model):
             'patient': PatientDetails.query.get(self.patient_id).to_dict(load_links=False),
             'referal': Referal.query.get(self.reference_id).to_dict(load_links=False),
             # 'theater_id': Theater.query.get_or_404(self.theater_id).to_dict(load_links=False),
+            'name': self.name,
             'date': self.date,
             'start_time': str(self.start_time),
             'end_time': str(self.end_time),
@@ -454,7 +499,7 @@ class OperationRecord(PaginateAPI, db.Model):
 
     def from_dict(self, data):
         for field in [
-            'patient_id', 'reference_id', 'theater_id', 'date',
+            'patient_id', 'reference_id', 'theater_id', 'date', 'name',
             'start_time', 'end_time', 'pre_operative_record_id',
             'operative_record_id', 'post_operative_record_id',
             'anaesthetic_id'
