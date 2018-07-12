@@ -115,8 +115,8 @@ class SearchableMixin(object):
         for obj in cls.query:
             add_to_index(cls.__tablename__, obj)
 
-db.event.listen(db.session, 'before_commit', SearchableMixin.before_commit)
-db.event.listen(db.session, 'after_commit', SearchableMixin.after_commit)
+# db.event.listen(db.session, 'before_commit', SearchableMixin.before_commit)
+# db.event.listen(db.session, 'after_commit', SearchableMixin.after_commit)
 
 
 class PaginateAPI(object):
@@ -430,7 +430,7 @@ class OperationRecord(PaginateAPI, db.Model):
     patient_id = db.Column(db.Integer, db.ForeignKey('patient_details.id'))
     reference_id = db.Column(db.Integer, db.ForeignKey('referal.id'))
     theater_id = db.Column(db.Integer, db.ForeignKey('theater.id'))
-    name = db.Column(db.String(100))
+    # name = db.Column(db.String(100))
     date = db.Column(db.Date)
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
@@ -473,7 +473,7 @@ class OperationRecord(PaginateAPI, db.Model):
             'patient': PatientDetails.query.get(self.patient_id).to_dict(load_links=False),
             'referal': Referal.query.get(self.reference_id).to_dict(load_links=False),
             # 'theater_id': Theater.query.get_or_404(self.theater_id).to_dict(load_links=False),
-            'name': self.name,
+            # 'name': self.name,
             'date': self.date,
             'start_time': str(self.start_time),
             'end_time': str(self.end_time),
@@ -622,7 +622,7 @@ class PremedicationRecord(PaginateAPI, db.Model):
     def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            'prescription_id': self.prescription_id,
+            'prescription_id': PractitionerDetails.query.get(self.prescription_id).to_dict(load_links=False),
             'time_given': str(self.time_given),
             'given_by': self.given_by
         }
