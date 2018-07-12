@@ -324,7 +324,7 @@ class Hospital(PaginateAPI, db.Model):
 class Ward(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
-    hospital_id = db.Column(db.Integer, db.ForeignKey('hospital.id'))
+    hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
     theaters = db.relationship('Theater', backref='ward', lazy='dynamic')
 
     def __repr__(slef):
@@ -338,9 +338,9 @@ class Ward(PaginateAPI, db.Model):
         }
         if load_links:
             data['_links'] = {
-                # 'self': url_for('api.get_ward_details', id=self.id),
-                # 'hospital': url_for('api.get_hospital_details', id=self.hospital_id),
-                # 'theaters': url_for('api.get_ward_theaters', id=self.id)
+                'self': url_for('api.get_ward_details', id=self.id),
+                'hospital': url_for('api.get_hospital_details', id=self.hospital_id),
+                'theaters': url_for('api.get_ward_theaters', id=self.id)
             }
         return data
 
