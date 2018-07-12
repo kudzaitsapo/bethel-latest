@@ -622,7 +622,7 @@ class PremedicationRecord(PaginateAPI, db.Model):
     def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            'prescription_id': PractitionerDetails.query.get(self.prescription_id).to_dict(load_links=False),
+            'prescription': Prescription.query.get(self.prescription_id).to_dict(load_links=False),
             'time_given': str(self.time_given),
             'given_by': self.given_by
         }
@@ -630,6 +630,7 @@ class PremedicationRecord(PaginateAPI, db.Model):
             data['_links'] = {
                 'self': url_for('api.get_premedication_record_details', id=self.id),
                 'pre_operative_record': url_for('api.get_preoperative_record_details', id=self.pre_operative_record_id)
+                'prescription': url_for('api.get_prescription_details', id=self.prescription_id)
             }
         return data
 
