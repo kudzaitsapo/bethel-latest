@@ -629,7 +629,7 @@ class PremedicationRecord(PaginateAPI, db.Model):
         if load_links:
             data['_links'] = {
                 'self': url_for('api.get_premedication_record_details', id=self.id),
-                'pre_operative_record': url_for('api.get_preoperative_record_details', id=self.pre_operative_record_id)
+                'pre_operative_record': url_for('api.get_preoperative_record_details', id=self.pre_operative_record_id),
                 'prescription': url_for('api.get_prescription_details', id=self.prescription_id)
             }
         return data
