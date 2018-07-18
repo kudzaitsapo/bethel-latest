@@ -3,7 +3,7 @@ from app.models import Attachment, DAO
 from flask import jsonify, request
 from flask.views import MethodView
 
-attachments_dao = Attachment()
+attachments_dao = DAO(Attachment())
 
 @bp.route('/attachments/<int:id>', methods=['GET'])
 def get_attachments_details(id):

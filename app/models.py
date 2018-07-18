@@ -203,15 +203,15 @@ class Referal(PaginateAPI, db.Model):
     def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            # 'referer_id': PractitionerDetails.query.get(self.referer_id).to_dict(load_links=False),
-            # 'patient_id': PatientDetails.query.get(self.patient_id).to_dict(load_links=False),
+            'referer_id': PractitionerDetails.query.get(self.referer_id).to_dict(load_links=False),
+            'patient_id': PatientDetails.query.get(self.patient_id).to_dict(load_links=False),
             'note': self.note
         }
         if load_links:
             data['_links'] = {
                 'self': url_for('api.get_referal_details', id=self.id)
-                # 'referred_by': url_for('api.get_practitioner_details', id=self.referer_id),
-                # 'patient':url_for('api.get_patient_details', id=self.patient_id)
+                'referred_by': url_for('api.get_practitioner_details', id=self.referer_id),
+                'patient':url_for('api.get_patient_details', id=self.patient_id)
             }
         return data
 
@@ -433,20 +433,20 @@ class PatientDetails(PaginateAPI, db.Model):
 
 class OperationRecord(SearchableMixin, PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    patient_id = db.Column(db.Integer, db.ForeignKey('patient_details.id'), nullable=False)
-    reference_id = db.Column(db.Integer, db.ForeignKey('referal.id'), nullable=False)
-    theater_id = db.Column(db.Integer, db.ForeignKey('theater.id'), nullable=False)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient_details.id'))
+    reference_id = db.Column(db.Integer, db.ForeignKey('referal.id'))
+    theater_id = db.Column(db.Integer, db.ForeignKey('theater.id'))
     name = db.Column(db.String(100))
     date = db.Column(db.Date)
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
     pre_operative_record_id = db.Column(
-        db.Integer, db.ForeignKey('pre_operative_record.id'), nullable=False)
+        db.Integer, db.ForeignKey('pre_operative_record.id'))
     operative_record_id = db.Column(
-        db.Integer, db.ForeignKey('operative_record.id'), nullable=False)
+        db.Integer, db.ForeignKey('operative_record.id'))
     post_operative_record_id = db.Column(
-        db.Integer, db.ForeignKey('post_operative_record.id'), nullable=False)
-    anaesthetic_id = db.Column(db.Integer, db.ForeignKey('anaesthetic.id'), default=None)
+        db.Integer, db.ForeignKey('post_operative_record.id'))
+    anaesthetic_id = db.Column(db.Integer, db.ForeignKey('anaesthetic.id'))
     vitals = db.relationship(
         'VitalsRecord', backref='operation', lazy='dynamic')
     surgical_team = db.relationship(
@@ -478,7 +478,7 @@ class OperationRecord(SearchableMixin, PaginateAPI, db.Model):
             'id': self.id,
             'patient': PatientDetails.query.get(self.patient_id).to_dict(load_links=False),
             'referal': Referal.query.get(self.reference_id).to_dict(load_links=False),
-            # 'theater_id': Theater.query.get(self.theater_id).to_dict(load_links=False),
+            'theater_id': Theater.query.get(self.theater_id).to_dict(load_links=False),
             'name': self.name,
             'date': self.date,
             'start_time': str(self.start_time),
@@ -630,7 +630,7 @@ class PremedicationRecord(PaginateAPI, db.Model):
             'id': self.id,
             'prescription': Prescription.query.get(self.prescription_id).to_dict(load_links=False) if self.prescription_id else None,
             'time_given': str(self.time_given),
-            'given_by': self.given_by
+            'given_by': PractitionerDetails.query.get(self.given_by).to_dict(load_links=False) if self.given_by else None
         }
         if load_links:
             data['_links'] = {
@@ -667,15 +667,15 @@ class Anaesthetic(PaginateAPI, db.Model):
             'id': self.id,
             'start_time': str(self.start_time),
             'end_time': str(self.end_time),
-            # 'drug': Drug.query.get(self.drug_id).to_dict(load_links=False),
-            # 'technique': Technique.query.get(self.technique_id).to_dict(load_links=False),
+            'drug': Drug.query.get(self.drug_id).to_dict(load_links=False) if self.drug_id else None,
+            'technique': Technique.query.get(self.technique_id).to_dict(load_links=False) if self.technique_id else None,
             'operation': url_for('api.get_operation_record_details',id=OperationRecord.query.filter_by(anaesthetic_id=self.id).first().id)
         }
         if load_links:
             data['_links'] = {
-                'self': url_for('api.get_anaesthetic_details', id=self.id)
-                # 'drug' : url_for('api.get_drug_details', id=self.drug_id),
-                # 'technique': url_for('api.get_technique_details', id=self.technique_id)
+                'self': url_for('api.get_anaesthetic_details', id=self.id),
+                'drug' : url_for('api.get_drug_details', id=self.drug_id) if self.drug_id else None,
+                'technique': url_for('api.get_technique_details', id=self.technique_id) if self.technique_id else None
             }
         return data
 
