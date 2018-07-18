@@ -69,7 +69,7 @@ def get_practitioner_operations(id):
     practitioner = PractitionerDetails.query.get_or_404(id)
     args = request.args
     page, per_page = helpers.paginate(args)
-    operations = practitioner_dao.find_relations(practitioner.operations,page,per_page,'api.get_practitioner_operations', id=id)
+    operations = practitioner_dao.find_relations(practitioner.surguries,page,per_page,'api.get_practitioner_operations', id=id)
     return jsonify(operations)
 
 @bp.route('/practitioners/<int:id>/doses', methods=['GET'])

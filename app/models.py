@@ -124,6 +124,8 @@ class PaginateAPI(object):
     @staticmethod
     def to_collection_dict(query, page, per_page, endpoint, **kwargs):
         resources = query.paginate(page, per_page, False)
+        if resources.total == 0:
+            abort(404)
         data = {
             'items': [item.to_dict() for item in resources.items],
             '_meta': {
@@ -245,19 +247,21 @@ class PractitionerDetails(PaginateAPI, db.Model):
             'first_names': self.first_names,
             'surname': self.surname,
             'gender': self.gender,
-            # 'occupation': Occupation.query.get(self.occupation_id).to_dict(load_links=False),
+            'occupation': Occupation.query.get(self.occupation_id).to_dict(load_links=False) if self.occupation_id else None,
             'phone': self.phone,
-            'address': self.address
+            'address': self.address,
+            'patients_dosed': self.doses.count(),
+            'no_operations': self.surguries.count()
         }
         if load_links:
             data['_links'] = {
                 'self': url_for('api.get_practitioner_details', id=self.id),
-                # 'occupation': url_for('api.get_occupation_details', id=self.occupation_id),
+                'occupation': url_for('api.get_occupation_details', id=self.occupation_id) if self.occupation_id else None,
                 'referrees': url_for('api.get_practitioner_referrees',  id=self.id),
                 'prescriptions': url_for('api.get_practitioner_prescriptions', id=self.id),
                 'surgeries': url_for('api.get_practitioner_operations', id=self.id),
-                'patients_dosed': url_for('api.get_practitioner_doses', id=self.id),
-                'operatoins': url_for('api.get_operation_record_details',id=OperationRecord.query.filter_by(patient_id=self.id).first().id)
+                'patients_dosed': url_for('api.get_practitioner_doses', id=self.id) if (self.doses.count() > 0) else None,
+                'operations_perfomed': url_for('api.get_practitioner_operations',id=self.id) if (self.surguries.count() > 0) else None
             }
         return data
 
@@ -284,8 +288,8 @@ class Occupation(PaginateAPI, db.Model):
         }
         if load_links:
             data['_links'] = {
-                # 'self': url_for('api.get_occupation_details', id=self.id),
-                # 'practitioners': url_for('api.get_occupation_practitioners', id=self.id)
+                'self': url_for('api.get_occupation_details', id=self.id),
+                'practitioners': url_for('api.get_occupation_practitioners', id=self.id) if (self.practitioners.count() > 0) else None
             }
         return data
 
@@ -310,8 +314,8 @@ class Hospital(PaginateAPI, db.Model):
         }
         if load_links:
             data['_links'] = {
-                # 'self': url_for('api.get_hospital_details', id=self.id),
-                # 'wards': url_for('api.get_hospital_wards', id=self.id)
+                'self': url_for('api.get_hospital_details', id=self.id),
+                'wards': url_for('api.get_hospital_wards', id=self.id) if (self.wards.count() > 0) else None
             }
         return data
 
@@ -324,7 +328,7 @@ class Hospital(PaginateAPI, db.Model):
 class Ward(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
-    hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
+    hospital_id = db.Column(db.Integer, db.ForeignKey('hospital.id'), nullable=False)
     theaters = db.relationship('Theater', backref='ward', lazy='dynamic')
 
     def __repr__(slef):
@@ -340,7 +344,7 @@ class Ward(PaginateAPI, db.Model):
             data['_links'] = {
                 'self': url_for('api.get_ward_details', id=self.id),
                 'hospital': url_for('api.get_hospital_details', id=self.hospital_id),
-                'theaters': url_for('api.get_ward_theaters', id=self.id)
+                'theaters': url_for('api.get_ward_theaters', id=self.id) if (self.theaters.count() > 0) else None
             }
         return data
 
@@ -353,7 +357,7 @@ class Ward(PaginateAPI, db.Model):
 class Theater(PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
-    ward_id = db.Column(db.Integer, db.ForeignKey('ward.id'))
+    ward_id = db.Column(db.Integer, db.ForeignKey('ward.id'), nullable=False)
     operations = db.relationship(
         'OperationRecord', backref='Theater', lazy='dynamic')
 
@@ -363,14 +367,14 @@ class Theater(PaginateAPI, db.Model):
     def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            'title': self.name
-            # 'ward': Ward.query.get(self.ward_id).to_dict(load_links=False)
+            'title': self.name,
+            'ward': Ward.query.get(self.ward_id).to_dict(load_links=False)
         }
         if load_links:
             data['_links'] = {
-                # 'self': url_for('api.get_theater_details', id=self.id),
-                # 'ward': url_for('api.get_ward_details', id=self.ward_id),
-                # 'operations': url_for('api.get_theater_operations', id=self.id)
+                'self': url_for('api.get_theater_details', id=self.id),
+                'ward': url_for('api.get_ward_details', id=self.ward_id),
+                'operations': url_for('api.get_theater_operations', id=self.id) if (self.operations.count() > 0) else None
             }
         return data
 
@@ -405,13 +409,15 @@ class PatientDetails(PaginateAPI, db.Model):
             'surname': self.surname,
             'gender': self.gender,
             'address': self.address,
-            'phone': self.phone
+            'phone': self.phone,
+            'operations': self.operation_records.count(),
+            'prescriptions': self.medication.count()
         }
         if load_links:
             data['_links'] = {
                 'self': url_for('api.get_patient_details', id=self.id),
-                'operation_records': url_for('api.get_patient_operations', id=self.id),
-                'prescriptions': url_for('api.get_patient_prescriptions', id=self.id)
+                'operation_records': url_for('api.get_patient_operations', id=self.id) if (self.operation_records.count() > 0) else None,
+                'prescriptions': url_for('api.get_patient_prescriptions', id=self.id) if (self.medication.count() > 0) else None
             }
         return data
 
@@ -425,22 +431,22 @@ class PatientDetails(PaginateAPI, db.Model):
         return self
 
 
-class OperationRecord(PaginateAPI, db.Model):
+class OperationRecord(SearchableMixin, PaginateAPI, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    patient_id = db.Column(db.Integer, db.ForeignKey('patient_details.id'))
-    reference_id = db.Column(db.Integer, db.ForeignKey('referal.id'))
-    theater_id = db.Column(db.Integer, db.ForeignKey('theater.id'))
-    # name = db.Column(db.String(100))
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient_details.id'), nullable=False)
+    reference_id = db.Column(db.Integer, db.ForeignKey('referal.id'), nullable=False)
+    theater_id = db.Column(db.Integer, db.ForeignKey('theater.id'), nullable=False)
+    name = db.Column(db.String(100))
     date = db.Column(db.Date)
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
     pre_operative_record_id = db.Column(
-        db.Integer, db.ForeignKey('pre_operative_record.id'))
+        db.Integer, db.ForeignKey('pre_operative_record.id'), nullable=False)
     operative_record_id = db.Column(
-        db.Integer, db.ForeignKey('operative_record.id'))
+        db.Integer, db.ForeignKey('operative_record.id'), nullable=False)
     post_operative_record_id = db.Column(
-        db.Integer, db.ForeignKey('post_operative_record.id'))
-    anaesthetic_id = db.Column(db.Integer, db.ForeignKey('anaesthetic.id'))
+        db.Integer, db.ForeignKey('post_operative_record.id'), nullable=False)
+    anaesthetic_id = db.Column(db.Integer, db.ForeignKey('anaesthetic.id'), default=None)
     vitals = db.relationship(
         'VitalsRecord', backref='operation', lazy='dynamic')
     surgical_team = db.relationship(
@@ -472,8 +478,8 @@ class OperationRecord(PaginateAPI, db.Model):
             'id': self.id,
             'patient': PatientDetails.query.get(self.patient_id).to_dict(load_links=False),
             'referal': Referal.query.get(self.reference_id).to_dict(load_links=False),
-            # 'theater_id': Theater.query.get_or_404(self.theater_id).to_dict(load_links=False),
-            # 'name': self.name,
+            # 'theater_id': Theater.query.get(self.theater_id).to_dict(load_links=False),
+            'name': self.name,
             'date': self.date,
             'start_time': str(self.start_time),
             'end_time': str(self.end_time),
@@ -622,7 +628,7 @@ class PremedicationRecord(PaginateAPI, db.Model):
     def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            'prescription': Prescription.query.get(self.prescription_id).to_dict(load_links=False),
+            'prescription': Prescription.query.get(self.prescription_id).to_dict(load_links=False) if self.prescription_id else None,
             'time_given': str(self.time_given),
             'given_by': self.given_by
         }
@@ -630,7 +636,7 @@ class PremedicationRecord(PaginateAPI, db.Model):
             data['_links'] = {
                 'self': url_for('api.get_premedication_record_details', id=self.id),
                 'pre_operative_record': url_for('api.get_preoperative_record_details', id=self.pre_operative_record_id),
-                'prescription': url_for('api.get_prescription_details', id=self.prescription_id)
+                'prescription': url_for('api.get_prescription_details', id=self.prescription_id) if self.prescription_id else None
             }
         return data
 
@@ -697,12 +703,13 @@ class Drug(PaginateAPI, db.Model):
     def to_dict(self, load_links=True):
         data = {
             'id': self.id,
-            'name': self.name
+            'name': self.name,
+            'anaesthetics': self.anaesthetics.count()
         }
         if load_links:
             data['_links'] =  {
                 'self': url_for('api.get_drug_details', id=self.id),
-                'anaesthetics': url_for('api.get_drugs_anaesthetics', id=self.id)
+                'anaesthetics': url_for('api.get_drugs_anaesthetics', id=self.id) if (self.anaesthetics.count() > 0) else None
             }
 
     def from_dict(self, data):
@@ -730,7 +737,7 @@ class Technique(PaginateAPI, db.Model):
         if load_links:
             data['_links'] = {
                 'self': url_for('api.get_technique_details', id=self.id),
-                'anaesthetics': url_for('api.get_techniques_anaesthetics', id=self.id)
+                'anaesthetics': url_for('api.get_techniques_anaesthetics', id=self.id) if (self.anaesthetic_id.count() > 0) else None
             }
         return data
 
@@ -831,7 +838,6 @@ class OperativeRecord(PaginateAPI, db.Model):
 
     def __repr__(self):
         return '<OperativeRecord {}>'.format(self.id)
-
 
     def to_dict(self, load_links=True):
         data = {
