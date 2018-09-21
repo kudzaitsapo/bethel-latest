@@ -1,0 +1,254 @@
+{% extends 'base/layout.html' %}
+{% from 'base/components.jinja' import render_card, render_line, render_textbox %}
+
+{% block content %}
+<div class="content">
+	<div class="container-fluid">
+		<!--
+		<div class="row">
+			{{ 
+			 render_card(
+				color='blue', 
+				icon='assignment_ind', 
+				value='Record',
+				title='Individual Record',
+				stats="<h4> This is where the full details of a particular individual's record is displayed in it's entirety </h4>") |safe }}
+		</div>
+	-->
+		<div class="row">
+			<div class="col-md-8">
+				<div class="card">
+					<div class="card-header" data-background-color="blue">
+						<i class="material-icons">person</i>
+						Patient Details
+					</div>
+					<div class="content">
+						<div class="row">
+						  {{ render_line("RECORD ID", 3899) | safe }}
+						</div>
+						<div class="row">
+						  {{ render_line("PATIENT NAME", "Eclipsa Butterfly") | safe }}
+						  {{ render_line("HOSPITAL NAME", "Parirenyatwa") | safe }}
+						  {{ render_line("WARD", "B4") | safe }}
+						</div>
+						<div class="row">
+						  {{ render_line("ANASTHETIST", "Dr Globgor") | safe }}
+						  {{ render_line("SURGEON", "Dr Strange") | safe }}
+						  {{ render_line("DATE RECORDED", "03-06-2018") | safe }}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+		  <div class="col-lg-8 col-md-12">
+			<div class="card card-nav-tabs">
+				<div class="card-header" data-background-color="blue">
+					<div class="nav-tabs-navigation">
+						<div class="nav-tabs-wrapper">
+							<ul class="nav nav-tabs" data-tabs="tabs">
+								<li class="active">
+									<a href="#pre_operative" data-toggle="tab" aria-expanded="true">
+										<i class="material-icons">notes</i>
+										Pre-Operative
+									<div class="ripple-container"></div></a>
+								</li>
+								<li class="">
+									<a href="#operative" data-toggle="tab" aria-expanded="false">
+										<i class="material-icons">insert_chart_outlined</i>
+										Operative
+									<div class="ripple-container"></div></a>
+								</li>
+								<li >
+									<a href="#post_operative" data-toggle="tab" aria-expanded="false">
+										<i class="material-icons">insert_chart</i>
+										Post-Operative
+									<div class="ripple-container"></div></a>
+								</li>
+								<li>
+									<a href="#monitor_vitals" data-toggle="tab" aria-expanded="false">
+										<i class="material-icons">show_chart</i>
+										Monitor Vitals
+									<div class="ripple-container"></div></a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="card-content">
+					<div class="tab-content">
+
+					<!-- Pre Operative Stuff -->
+						<div class="tab-pane" id="pre_operative">
+							<div class="row">
+								{{ render_line(name="Mass") |safe }}
+
+								{{ render_line(name="Kg") |safe }}
+							</div>
+
+							<div class="row">
+								{{ render_line(name="T") |safe }}
+								{{ render_line(name="P") |safe }}
+								{{ render_line(name="R") |safe }}
+							</div>
+							
+							<div class="row">
+								{{ render_line(name="R.S") |safe }}
+								{{ render_line(name="BL.gp") |safe }}
+							</div>
+
+							<div class="row">
+								{{ render_line(name="C.V.S.") |safe }}
+								{{ render_line(name="B.P") |safe }}
+								{{ render_line(name="Hb") |safe }}
+							</div>
+
+							<div class="row">
+								{{ render_line(name="URINE") |safe }}
+								{{ render_line(name="B.U") |safe }}
+							</div>
+
+							<div class="row">
+								{{ render_textbox("DRUG THERAPY notes")| safe }}
+							</div>
+
+							<div class="row">
+								{{ render_textbox("PREMEDICATION") |safe }}
+							</div>
+
+							<div class="row">
+								{{ render_textbox("BY WHOM ORDERED") |safe }}
+							</div>
+
+							<div class="row">
+								{{ render_line(name="time given") |safe }}
+							</div>
+						</div>
+						<!-- /Pre-Operative -->
+
+						<!-- Operative -->
+						<div class="tab-pane" id="operative">
+							<div class="row">
+								{{ render_line(name="Operation") |safe }}
+							</div>
+							<div class="row">
+								<h4 class="title">Anasthetic</h4>
+								{{ render_line(name="Start") |safe }}
+								{{ render_line(name="Finish") |safe }}
+							</div>
+							<hr>
+							<div class="row">
+								<h5 class="title">Anasthetic</h5>
+								{{ render_textbox("(drugs and technique)") |safe }}
+								{{ render_line(name="POSTURE") |safe }}
+							</div>
+							<div class="row">
+								{{ render_textbox("I.V THERAPY") |safe }}
+							</div>
+							<div class="row">
+								{{ render_line(name="Condition on leaving theatre") |safe }}
+							</div>
+							<div class="row">
+								{{ render_line(name="Skin") |safe }}
+								{{ render_line(name="Colour") |safe }}
+							</div>
+							<div class="row">
+								{{ render_textbox("REFLEXES") |safe }}
+								{{ render_line(name="B.P.") |safe }}
+								{{ render_line(name="P.R.") |safe }}
+							</div>
+							<hr>
+							<div class="row">
+								{{ render_textbox("ABNORMAL REACTIONS") |safe }}
+							</div>
+						</div>
+						<!-- /Operative -->
+						
+						<!-- Post Operative -->
+						<div class="tab-pane active" id="post_operative">
+							<div class="row">
+								{{ render_line(name="INSTRUCTIONS TO WARD") |safe }}
+							</div>
+							<div class="row">
+								{{ render_textbox("GENERAL") |safe }}
+							</div>
+							<div class="row">
+								{{ render_textbox("I.V. THERAPY") |safe }}
+							</div>
+							<div class="row">
+								{{ render_textbox("SEDATION") |safe }}
+							</div>
+							<hr>
+							<div class="row">
+								{{ render_textbox("COMPLICATIONS") |safe }}
+							</div>
+							<hr>
+							<div class="row">
+								{{ render_textbox("") |safe }}
+							</div>
+						</div>
+						<!-- / Post Operative -->
+
+						<!-- Monitor Vitals -->
+						<div class="tab-pane" id="monitor_vitals">
+							<div class="row">
+								<table class="table">
+								  <tr>
+								  	{% for i in range(14) %}
+								      <th>{{ i*1 }}</th>
+								    {% endfor %}
+								  </tr>
+								  <tr>
+								  	{% for i in range(14) %}
+								      <td>{{ i*2 }}</td>
+									{% endfor %}
+								  </tr>
+								  <tr>
+								  	{% for i in range(14) %}
+								      <td>{{ i*3 }}</td>
+									{% endfor %}
+								  </tr>
+								  <tr>
+								  	{% for i in range(14) %}
+								      <td>{{ i*2 }}</td>
+									{% endfor %}
+								  </tr>
+								  <tr>
+								  	{% for i in range(14) %}
+								      <td>{{ i*7 }}</td>
+									{% endfor %}
+								  </tr>
+								  <tr>
+								  	{% for i in range(14) %}
+								      <td>{{ i*4 }}</td>
+									{% endfor %}
+								  </tr>
+								  <tr>
+								  	{% for i in range(14) %}
+								      <td>{{ i*9 }}</td>
+									{% endfor %}
+								  </tr>
+								  <tr>
+								  	{% for i in range(14) %}
+								      <td>{{ i*3 }}</td>
+									{% endfor %}
+								  </tr>
+								  <tr>
+								  	{% for i in range(14) %}
+								      <td>{{ i*2 }}</td>
+									{% endfor %}
+								  </tr>
+								</table>
+							</div>
+							<div class="row">
+								
+							</div>
+						</div>
+						<!-- / Vitals -->
+		</div>
+
+	</div>
+</div>
+{% endblock %}

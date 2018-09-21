@@ -1,0 +1,37 @@
+{% extends 'base/layout.html' %}
+
+{% from 'base/components.jinja' import render_card, render_input, render_select, render_textarea %}
+
+{% block content %}
+<div class="content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-10">
+				<div class="card">
+					<form method="post">
+						<div class="card-header" data-background-color="blue">
+	                        <h3 class="title"><i class="material-icons">person_add</i>  Occupation</h3>
+	                        <h4>Add new occupation(eg Doctor, nurse, anaesthetist)</h4>
+	                    </div>
+	                    <div class="row">
+                            {% with messages = get_flashed_messages() %}
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        <p class="alert alert-info"> {{ message }} </p>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+						{{ render_input("text", "occupation") | safe}}
+						 <div class="card-footer">
+	                        <div class="stats">
+	                            <button type="submit" class="btn btn-info">Add occupation</button>
+	                        </div>
+                        </div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

@@ -1,0 +1,128 @@
+<!-- HTML -->
+
+<!--
+class Chart():
+	- name : str
+	- chart_type : str
+	- series : list
+	- max : int=100
+	- min : int=0
+
+-->
+{% macro render_input(type='text', name='', value='') -%}
+<div class="col-sm-4">
+	<div class="form-group has-info">
+		<label class="control-label">{{ name }}</label>
+    	<input type="{{ type }}" value="{{ value }}" name="{{ name }}" class="form-control" />
+	</div>
+</div>
+{%- endmacro %}
+
+{% macro render_select(choices=[], label='', name='') -%}
+<div class="col-sm-4">
+	<div class="form-group has-info">
+		<label class="control-label">{{ label }}</label>
+		<select name="{{name}}" class="form-control">
+			{% for choice in choices %}
+				<option value="{{choice.value}}">{{choice.key}}</option>
+			{% endfor %}
+		</select>
+	</div>
+</div>
+{%- endmacro %}
+
+
+{% macro render_textarea(placeholder="", name="", rows="5")  -%}
+<div class="col-md-8 col-sm-10 has-info">
+	<textarea class="form-control has-info"
+	placeholder="{{ placeholder }}" rows="{{ rows }}" name="{{ name }}"></textarea>
+</div>
+{%- endmacro %}
+
+
+{% macro render_card(color ,icon, value, title, stats) -%}
+<div class="col-lg-3 col-md-6 col-sm-6">
+	<div class="card card-stats">
+		<div class="card-header" data-background-color="{{ color }}">
+			<i class="material-icons">{{ icon }}</i>
+		</div>
+		<div class="card-content">
+			<p class="category">{{ title }}</p>
+			<h3 class="title"> {{ value }} </h3>
+		</div>
+		<div class="card-footer">
+			<div class="stats">
+				{{ stats }}
+			</div>
+		</div>
+	</div>
+</div>
+{%- endmacro %}
+
+{% macro render_chart(color, icon, category, chartobj, stats) -%}
+	<div class="col-md-4">
+		<div class="card">
+			<div class="card-header card-chart" data-background-color="{{ color }}">
+				<div class="ct-chart" id="{{ chartobj.name }}"></div>
+			</div>
+			<div class="card-content">
+				<h4 class="title">{{ title }}</h4>
+				<p class="category">{{ category }}</p>
+			</div>
+			<div class="card-footer">
+				<div class="stats">
+					{{ stats }}
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+    /*  **************** Chart for {{ chart_dict.name }} ******************** */
+
+        var dataFor{{ chartobj.name }} = {
+            labels: [],
+            series: [
+                {{ chartobj.series }}
+            ]
+        };
+
+        var optionsFor{{ chartobj.name }} = {
+            high: {{ chartobj.max }},
+            low: {{ chartobj.min }},
+            axisX: {
+                showGrid: false
+            }
+        };
+
+        var responsiveOptionsFor{{ chartobj.name }} = [
+            ['screen and (max-width: 640px)', {
+                seriesBarDistance: 2,
+                axisX: {
+                    labelInterpolationFnc: function(value) {
+                        return value[0];
+                    }
+                }
+            }]
+        ];
+
+        var simpleChartFor{{ chartobj.name }} = Chartist.{{ chartobj.chart_type }}('{{ chartobj.name }}', dataSimpleBarChart, optionsSimpleBarChart, responsiveOptionsSimpleBarChart);
+        md.startAnimationForBarChart( simpleChartFor{{ chartobj.name }} );
+</script>
+{%- endmacro  %}
+
+<!-- render similar templates to form items -->
+{% macro render_line(name='', value='') -%}
+<div class="col-sm-4">
+	<div class="form-group has-info">
+		<label class="control-label">{{ name }}</label>
+    	<span>{{ value }}</span>
+	</div>
+</div>
+{%- endmacro %}
+
+{% macro render_textbox(name="", value="")  -%}
+<div class="col-md-8 col-sm-10">
+	<label class="control-label">{{ name }}</label>
+	<div> {{ value }} </div>
+</div>
+{%- endmacro %}

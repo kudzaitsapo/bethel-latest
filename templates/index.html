@@ -1,0 +1,141 @@
+{% extends 'base/layout.html' %}
+{% from 'base/components.jinja' import render_card %}
+
+{% block content %}
+<div class="content">
+	<div class="container-fluid">
+		<div class="row">
+			{{ 
+			 render_card(
+				color='blue', 
+				icon='assignment', 
+				value=130,
+				title='Entered Patient Records',
+				stats='in the entire patient monitoring system')|safe 
+			}}
+
+			{{ 
+			 render_card(
+				color='blue', 
+				icon='mode_edit', 
+				value=65,
+				title='Total Operations performed',
+				stats='in the past week')|safe 
+			}}
+			
+			<!-- Monthly progress chart -->
+			<!-- Commented Out till custom endpoints designed
+
+			<div class="col-md-4">
+				<div class="card">
+					<div class="card-header card-chart" data-background-color="blue">
+						<div class="ct-chart" id="MonthlyOps"></div>
+					</div>
+					<div class="card-content">
+						<h4 class="title"> Total Operations performed</h4>
+						<p class="category">Viewed month over month</p>
+					</div>
+				</div>
+			</div>
+			-->
+			<!-- /Monthly progress chart -->
+		</div>
+
+		<div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header" data-background-color="blue">
+                    	<i class="material-icons">assignment</i>
+                        <h4 class="title">Total Medical Practitioners</h4>
+                        <p class="category">Currently on the system</p>
+                    </div>
+                    <!-- Begin Table -->
+                    <div class="card-content table-responsive">
+                        <table class="table">
+                            <thead class="text-primary">
+                              <tr>
+                              	<th>Record ID</th>
+                            	<th>Full Name</th>
+                            	<th>Surname</th>
+                            	<th>Gender</th>
+								<th>Occupation</th>
+								<th>Phone Number</th>
+                              </tr>
+                        	</thead>
+                            <tbody>
+                                <tr>
+                                	<td><a href="{{ url_for('display_record', record_id=3819) }}">3819</a></td>
+                                	<td>David Bethel</td>
+                                	<td>Parirenyatwa</td>
+                                	<td>Dr Strange</td>
+                                	<td>B6</td>
+									<td>11-03-2018</td>
+                                </tr>
+                                <tr>
+                                	<td><a href="{{ url_for('display_record', record_id=3820) }}">3820</a></td>
+                                	<td>Eclipsa Butterfly</td>
+                                	<td>Parirenyatwa</td>
+                                	<td>Dr Strange</td>
+                                	<td>B4</td>
+									<td>15-06-2018</td>
+                                </tr>
+                                <tr>
+                                	<td><a href="{{ url_for('display_record', record_id=3821) }}">3821</a></td>
+                                	<td>Peter Parker</td>
+                                	<td>Parirenyatwa</td>
+                                	<td>Thanos</td>
+                                	<td>B6</td>
+									<td>12-06-2018</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+					<!-- /Table -->
+                </div>
+            </div>
+        </div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!--
+<script>
+/*  **************** Chart for Total Operations ******************** */
+
+    var dataForMonthlyOps = {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        series: [
+        	{% if chartobj %}
+            {{ chartobj.series }}
+            {% else %}
+            [542, 443, 320, 780, 553, 453, 326, 434, 568, 610, 756, 895]
+            {% endif %}
+        ]
+    };
+
+    var optionsForMonthlyOps = {
+        high: 1000,
+        low: 0,
+        axisX: {
+            showGrid: true
+        }
+    };
+
+    var responsiveOptionsForMonthlyOps = [
+        ['screen and (max-width: 640px)', {
+            seriesBarDistance: 2,
+            axisX: {
+                labelInterpolationFnc: function(value) {
+                    return value[0];
+                }
+            }
+        }]
+    ];
+
+    var simpleChartForMonthlyOps = Chartist.Bar('#MonthlyOps', dataForMonthlyOps, optionsForMonthlyOps, responsiveOptionsForMonthlyOps);
+    md.startAnimationForBarChart( simpleChartForMonthlyOps );
+</script>
+-->
+{% endblock %}

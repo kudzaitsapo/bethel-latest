@@ -1,0 +1,73 @@
+{% extends 'base/layout.html' %}
+{% from 'base/components.jinja' import render_card %}
+
+{% block content %}
+<div class="content">
+	<div class="container-fluid">
+		<!--
+		<div class="row">
+			{{ 
+			 render_card(
+				color='blue', 
+				icon='assignment', 
+				value='View Records',
+				title='View List of all records',
+				stats='<h4>This will be a table where all the patient records are listed with the ability to filter them as well</h4>')|safe }}
+		</div>
+	-->
+		<div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header" data-background-color="blue">
+                    	<i class="material-icons">assignment</i>
+                        <h4 class="title">Practitioners Records</h4>
+                        <p class="category">Table of all the practitioners currently on the system</p>
+                    </div>
+                    <!-- Begin Table -->
+                    <div class="card-content table-responsive">
+                        <table class="table">
+                            <thead class="text-primary">
+                              <tr>
+                              	<th>Record ID</th>
+                            	<th>Full Name</th>
+                            	<th>Surname</th>
+                            	<th>Gender</th>
+                            	<th>Occupation</th>
+								<th>Phone</th>
+								<th>Address</th>
+                              </tr>
+                        	</thead>
+                            <tbody>
+                                {% for practitioner in practitioners %}
+                                    <tr>
+                                        <td>{{ practitioner.id }}</td>
+                                        <td> {{ practitioner.firstnames }} </td>
+                                        <td>{{ practitioner.surname}} </td>
+                                        <td> 
+                                            {% if practitioner.gender == 'm' %}
+                                                Male
+                                            {% else %}
+                                                Female
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% for occupation in occupations %}
+                                                {% if practitioner.occupation_id == occupation.id %}
+                                                    {{occupation.title}}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>{{ practitioner.phone }}</td>
+                                        <td> {{practitioner.address}} </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+					<!-- /Table -->
+                </div>
+            </div>
+        </div>
+	</div>
+</div>
+{% endblock %}

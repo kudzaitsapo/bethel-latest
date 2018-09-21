@@ -1,0 +1,18 @@
+{
+  "name": "Project Bethel",
+  "short_name": "Bethel",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#00BCD4",
+  "background_color": "#eee",
+  "description": "A surgery patient management app",
+  "icons": [{
+    "src": "img/favicon.png",
+    "sizes": "96x96",
+    "type": "image/png"
+  }, {
+    "src": "img/icon.png",
+    "sizes": "512x512",
+    "type": "image/png"
+  }]
+}

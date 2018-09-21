@@ -1,0 +1,134 @@
+{% extends 'base/layout.html' %}
+{% from 'base/components.jinja' import render_card, render_input, render_textarea %}
+
+{% block content %}
+<div class="content">
+	<div class="container-fluid">
+		<div class="row">
+			<a href="#">{{ 
+			 render_card(
+				color='blue', 
+				icon='assignment', 
+				value='8',
+				title='Number of Wards',
+				stats='<h4>Number of Wards currently on the system. <small>Click to View</small></h4>')|safe 
+            }}</a>
+
+            <a href="#">
+                {{ 
+                render_card(
+                    color='blue', 
+                    icon='assignment', 
+                    value='15',
+                    title='Number of Theatres',
+                    stats='<h4>Number of Theatres currently on the system. <small>Click to View</small></h4>')|safe 
+                }}
+            </a>
+		</div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header" data-background-color="blue">
+                        <i class="material-icons">assignment</i>
+                        <h4 class="title">Wards</h4>
+                    </div>
+                    <!-- Begin Table -->
+                    <div class="card-content table-responsive">
+                        <table class="table">
+                            <thead class="text-primary">
+                              <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                {% for ward in wards %}
+                                    <tr>
+                                        <td>{{ward.id}}</td>
+                                        <td>{{ward.name}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /Table -->
+                </div>
+            </div>
+            <div class="col-md-6">
+                 <div class="card">
+                    <div class="card-header" data-background-color="blue">
+                        <i class="material-icons">assignment</i>
+                        <h4 class="title">Theaters</h4>
+                    </div>
+                    <!-- Begin Table -->
+                    <div class="card-content table-responsive">
+                        <table class="table">
+                            <thead class="text-primary">
+                              <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Ward</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                {% for theater in theaters %}
+                                    <tr>
+                                        <td>{{theater.id}}</td>
+                                        <td>{{theater.name}}</td>
+                                        <td>{{theater.ward}}</td>
+                                    </tr>
+                                {% endfor %}                               
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /Table -->
+                </div>
+            </div>
+        </div>
+        <div class="row">
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header" data-background-color="blue">
+                        <h4 class="title"><i class="material-icons">add_circle</i> New Ward</h4>
+                    </div>
+                    <div class="card-content">
+                        <div class="row">
+                            {{ render_input("text", "Ward_Name")|safe  }}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="stats">
+                            <button class="btn btn-info">Add Ward</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header" data-background-color="blue">
+                        <h4 class="title"><i class="material-icons">add_circle</i> New Theatre</h4>
+                    </div>
+                    <div class="card-content">
+                        <div class="row">
+                            {{ render_input("text", "Theatre_Name")|safe }}
+                            {{ render_input("text", "Ward")|safe }}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="stats">
+                            <button class="btn btn-info">Add Theatre</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

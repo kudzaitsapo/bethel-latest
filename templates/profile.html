@@ -1,0 +1,31 @@
+{% extends 'base/layout.html' %}
+{% from 'base/components.jinja' import render_card, render_input %}
+
+{% block content %}
+<div class="content">
+	<div class="container-fluid">
+		
+		<div class="row">
+			{{ 
+			 render_card(
+				color='blue', 
+				icon='person', 
+				value='Profile',
+				title='Profile Page',
+				stats='<h4>This is where the user can view and edit account details</h4>')|safe }}
+		</div>
+		
+		<!-- <div class="row">
+			<div class="card">
+				<div class="card-header" data-background-color="blue">Profile Details</div>
+				<div class="card-content">
+					<div class="row">
+						{{ render_input("Full Name") }}
+					</div>
+				</div>
+			</div>
+		</div>
+ -->
+	</div>
+</div>
+{% endblock %}
