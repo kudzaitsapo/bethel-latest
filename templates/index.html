@@ -60,33 +60,33 @@
                             	<th>Gender</th>
 								<th>Occupation</th>
 								<th>Phone Number</th>
+                                <th>Address</th>
                               </tr>
                         	</thead>
                             <tbody>
-                                <tr>
-                                	<td><a href="{{ url_for('display_record', record_id=3819) }}">3819</a></td>
-                                	<td>David Bethel</td>
-                                	<td>Parirenyatwa</td>
-                                	<td>Dr Strange</td>
-                                	<td>B6</td>
-									<td>11-03-2018</td>
-                                </tr>
-                                <tr>
-                                	<td><a href="{{ url_for('display_record', record_id=3820) }}">3820</a></td>
-                                	<td>Eclipsa Butterfly</td>
-                                	<td>Parirenyatwa</td>
-                                	<td>Dr Strange</td>
-                                	<td>B4</td>
-									<td>15-06-2018</td>
-                                </tr>
-                                <tr>
-                                	<td><a href="{{ url_for('display_record', record_id=3821) }}">3821</a></td>
-                                	<td>Peter Parker</td>
-                                	<td>Parirenyatwa</td>
-                                	<td>Thanos</td>
-                                	<td>B6</td>
-									<td>12-06-2018</td>
-                                </tr>
+                                {% for practitioner in practitioners %}
+                                    <tr>
+                                        <td>{{ practitioner.id }}</td>
+                                        <td> {{ practitioner.first_names }} </td>
+                                        <td>{{ practitioner.surname}} </td>
+                                        <td> 
+                                            {% if practitioner.gender == 'm' %}
+                                                Male
+                                            {% else %}
+                                                Female
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% for occupation in occupations %}
+                                                {% if practitioner.occupation_id == occupation.id %}
+                                                    {{occupation.title}}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>{{ practitioner.phone }}</td>
+                                        <td> {{practitioner.address}} </td>
+                                    </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>

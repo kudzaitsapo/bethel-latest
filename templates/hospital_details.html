@@ -1,5 +1,5 @@
 {% extends 'base/layout.html' %}
-{% from 'base/components.jinja' import render_card, render_input, render_textarea %}
+{% from 'base/components.jinja' import render_card, render_input, render_textarea, render_select %}
 
 {% block content %}
 <div class="content">
@@ -9,7 +9,7 @@
 			 render_card(
 				color='blue', 
 				icon='assignment', 
-				value='8',
+				value=ward_count,
 				title='Number of Wards',
 				stats='<h4>Number of Wards currently on the system. <small>Click to View</small></h4>')|safe 
             }}</a>
@@ -19,7 +19,7 @@
                 render_card(
                     color='blue', 
                     icon='assignment', 
-                    value='15',
+                    value=theater_count,
                     title='Number of Theatres',
                     stats='<h4>Number of Theatres currently on the system. <small>Click to View</small></h4>')|safe 
                 }}
@@ -85,6 +85,13 @@
                 </div>
             </div>
         </div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <p class="alert alert-success">{{message | safe}}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <div class="row">
 
             <div class="col-md-6">
@@ -92,16 +99,19 @@
                     <div class="card-header" data-background-color="blue">
                         <h4 class="title"><i class="material-icons">add_circle</i> New Ward</h4>
                     </div>
-                    <div class="card-content">
-                        <div class="row">
-                            {{ render_input("text", "Ward_Name")|safe  }}
+                    <form method="post" action="{{url_for('submit_details')}}">
+                        <div class="card-content">
+                            <input type="hidden" name="record" value="ward">
+                            <div class="row">
+                                {{ render_input("text", "Ward_Name")|safe  }}
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="stats">
-                            <button class="btn btn-info">Add Ward</button>
+                        <div class="card-footer">
+                            <div class="stats">
+                                <button type="submit" class="btn btn-info">Add Ward</button>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
 
@@ -111,17 +121,21 @@
                     <div class="card-header" data-background-color="blue">
                         <h4 class="title"><i class="material-icons">add_circle</i> New Theatre</h4>
                     </div>
-                    <div class="card-content">
-                        <div class="row">
-                            {{ render_input("text", "Theatre_Name")|safe }}
-                            {{ render_input("text", "Ward")|safe }}
+                    <form method="post" action="{{url_for('submit_details')}}">
+                        <div class="card-content">
+                            <input type="hidden" name="record" value="theater">
+                            <div class="row">
+                                {{ render_input("text", "Theatre_Name")|safe }}
+                                {{ render_select(ward_choices, "Ward", "ward") }}
+
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="stats">
-                            <button class="btn btn-info">Add Theatre</button>
+                        <div class="card-footer">
+                            <div class="stats">
+                                <button type="submit" class="btn btn-info">Add Theatre</button>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>

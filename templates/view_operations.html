@@ -1,0 +1,48 @@
+{% extends 'base/layout.html' %}
+{% from 'base/components.jinja' import render_card %}
+
+{% block content %}
+<div class="content">
+	<div class="container-fluid">
+		<div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header" data-background-color="blue">
+                    	<i class="material-icons">assignment</i>
+                        <h4 class="title">Operation Records</h4>
+                        <p class="category">Table of all the surgeries performed</p>
+                    </div>
+                    <!-- Begin Table -->
+                    <div class="card-content table-responsive">
+                        <table class="table">
+                            <thead class="text-primary">
+                              <tr>
+                              	<th>Record ID</th>
+                            	<th>Full Name</th>
+                            	<th>Surname</th>
+                            	<th>Operation</th>
+                            	<th>Date Performed</th>
+                            	<th>Start Time</th>
+                              </tr>
+                        	</thead>
+                            <tbody>
+                            	{% for surgery in operations %}
+                            	<tr>
+                            		<td><a href="{{url_for('view_operation', id=surgery.id)}}">{{surgery.id}}</a></td>
+                            		<td>{{surgery.patient.first_names}}</td>
+                            		<td>{{surgery.patient.surname}}</td>
+                            		<td>{{surgery.operation}}</td>
+                            		<td>{{surgery.date}}</td>
+                            		<td>{{surgery.start_time}}</td>
+                            	</tr>
+                            	{% endfor %}                              
+                            </tbody>
+                        </table>
+                    </div>
+					<!-- /Table -->
+                </div>
+            </div>
+        </div>
+	</div>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+Mobile Application:
+1. fix outstanding issues (Things not working yet like premed and anaesthetics & whatnot)
+2. Turn off or create new splash screen
+3. Log identity of person who adds or updates data
+4. Fix the icons & whatnot for android 5 & above
+
+
+
+API & Admin Dashboard:
+1. Make the view operation page dynamic
+2. Log identity of person who adds or updates data
+3. Make the profile page for admin
+4. Deactivate and activate user accounts
+5. Fix the Occupation issue

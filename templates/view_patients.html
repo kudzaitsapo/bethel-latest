@@ -1,0 +1,56 @@
+{% extends 'base/layout.html' %}
+{% from 'base/components.jinja' import render_card %}
+
+{% block content %}
+<div class="content">
+	<div class="container-fluid">
+		<div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header" data-background-color="blue">
+                    	<i class="material-icons">assignment</i>
+                        <h4 class="title">Patient Records</h4>
+                        <p class="category">Table of all the patients in the system</p>
+                    </div>
+                    <!-- Begin Table -->
+                    <div class="card-content table-responsive">
+                        <table class="table">
+                            <thead class="text-primary">
+                              <tr>
+                              	<th>Record ID</th>
+                            	<th>Full Name</th>
+                            	<th>Surname</th>
+                            	<th>National ID</th>
+                            	<th>Gender</th>
+                            	<th>Phone</th>
+								<th></th>
+                              </tr>
+                        	</thead>
+                            <tbody>
+                              {% for patient in patients %}
+                              	<tr>
+                              		<td>{{patient.id}}</td>
+                              		<td>{{patient.first_names}}</td>
+                              		<td>{{patient.surname}}</td>
+                              		<td>{{patient.national_id}}</td>
+                              		<td>
+                              			{% if patient.gender == "m" %}
+                              				Male
+                              			{% else %}
+                              				Female
+                              			{% endif %}
+                              		</td>
+                              		<td>{{patient.phone}}</td>
+                              		<td></td>
+                              	</tr>
+                              {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+					<!-- /Table -->
+                </div>
+            </div>
+        </div>
+	</div>
+</div>
+{% endblock %}

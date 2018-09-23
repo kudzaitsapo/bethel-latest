@@ -26,7 +26,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 #from werkzeug.security import generate_password_hash, check_password_hash
 
 try:
-    db_engine = create_engine('postgres://umxeybyicdeqiw:096a881cb75dc62e2f0a8435d57d30081b34ccb74ad1274cc472e296185ed65c@ec2-54-225-76-201.compute-1.amazonaws.com:5432/d4heepaet6jntm')
+    db_engine = create_engine('postgres://postgres:password@localhost:5432/bethel')
 except ImportError:
     db_engine = create_engine('sqlite:///test.sqlite')
 
@@ -202,6 +202,7 @@ class OperationRecord(Base):
     reference_id = Column(Integer, ForeignKey('referal.id'))
     theater_id = Column(Integer, ForeignKey('theater.id'))
     anaesthetist_id = Column(Integer, ForeignKey('practitionerdetails.id'))
+    surgeon_id = Column(Integer, ForeignKey('practitionerdetails.id'))
     date = Column(String)
     start_time = Column(String)
     end_time = Column(String)

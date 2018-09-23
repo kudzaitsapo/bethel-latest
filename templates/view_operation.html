@@ -1,0 +1,323 @@
+{% extends 'base/layout.html' %}
+{% from 'base/components.jinja' import render_card, render_line, render_textbox %}
+
+{% block content %}
+<div class="content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-8">
+				<div class="card">
+					<div class="card-header" data-background-color="blue">
+						<i class="material-icons">person</i>
+						Patient Details
+					</div>
+					<div class="content">
+						<div class="row">
+						  {{ render_line("RECORD ID", operation.operation.id) | safe }}
+						  {{ render_line("Operation", operation.operation.operation) | safe }}
+						</div>
+						<div class="row">
+						  {{ render_line("PATIENT NAME", operation.patient.first_names + "&nbsp;&nbsp;" + operation.patient.surname) | safe }}
+						  {{ render_line("HOSPITAL NAME", "Parirenyatwa") | safe }}
+						  {{ render_line("WARD", "") | safe }}
+						</div>
+						<div class="row">
+						  {{ render_line("ANASTHETIST", operation.anaesthetist.first_names + "&nbsp;&nbsp;" + operation.anaesthetist.surname) | safe }}
+						  {% if operation.surgeon %}
+						  	{{ render_line("SURGEON", operation.surgeon.first_names + "&nbsp;&nbsp;" + operation.surgeon.surname) | safe }}
+						  {% else %}
+						  	{{ render_line("SURGEON", "") | safe }}
+						  {% endif %}
+						  {{ render_line("DATE RECORDED", operation.operation.date) | safe }}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+		  <div class="col-lg-8 col-md-12">
+			<div class="card card-nav-tabs">
+				<div class="card-header" data-background-color="blue">
+					<div class="nav-tabs-navigation">
+						<div class="nav-tabs-wrapper">
+							<ul class="nav nav-tabs" data-tabs="tabs">
+								<li class="active">
+									<a href="#pre_operative" data-toggle="tab" aria-expanded="true">
+										<i class="material-icons">notes</i>
+										Pre-Operative
+									<div class="ripple-container"></div></a>
+								</li>
+								<li class="">
+									<a href="#operative" data-toggle="tab" aria-expanded="false">
+										<i class="material-icons">insert_chart_outlined</i>
+										Operative
+									<div class="ripple-container"></div></a>
+								</li>
+								<li >
+									<a href="#post_operative" data-toggle="tab" aria-expanded="false">
+										<i class="material-icons">insert_chart</i>
+										Post-Operative
+									<div class="ripple-container"></div></a>
+								</li>
+								<li>
+									<a href="#monitor_vitals" data-toggle="tab" aria-expanded="false">
+										<i class="material-icons">show_chart</i>
+										Monitor Vitals
+									<div class="ripple-container"></div></a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="card-content">
+					<div class="tab-content">
+
+					<!-- Pre Operative Stuff -->
+					<div class="tab-pane active" id="pre_operative">
+						<div class="row">
+							{% if operation.preop_record %}
+							{{ render_line("Mass", operation.preop_record.mass + "&nbsp; Kgs") |safe }}
+							{% else %}
+							{{render_line("Mass", "")}}
+							{% endif %}
+						</div>
+
+						<div class="row">
+							{% if operation.preop_record %}
+							{{ render_line(name="T", value=operation.preop_record.temperature) |safe }}
+							{{ render_line(name="P", value=operation.preop_record.pulse) |safe }}
+							{{ render_line(name="R", value=operation.preop_record.respiration) |safe }}
+							{% else %}
+							{{ render_line(name="T", value="") |safe }}
+							{{ render_line(name="P", value="") |safe }}
+							{{ render_line(name="R", value="") |safe }}
+							{% endif %}
+						</div>
+						
+						<div class="row">
+							{% if operation.preop_record %}
+							{{ render_line(name="R.S", value=operation.preop_record.respiratory_system) |safe }}
+							{{ render_line(name="BL.gp", value=operation.preop_record.blood_group) |safe }}
+							{% else %}
+							{{ render_line(name="R.S", value="") |safe }}
+							{{ render_line(name="BL.gp", value="") |safe }}
+							{% endif %}
+						</div>
+
+						<div class="row">
+							{% if operation.preop_record %}
+							{{ render_line(name="C.V.S.", value=operation.preop_record.cardiovascular_system) |safe }}
+							{{ render_line(name="B.P", value=operation.preop_record.blood_pressure) |safe }}
+							{{ render_line(name="Hb", value=operation.preop_record.haemoglobin) |safe }}
+							{% else %}
+							{{ render_line(name="C.V.S.", value="") |safe }}
+							{{ render_line(name="B.P", value="") |safe }}
+							{{ render_line(name="Hb", value="") |safe }}
+							{% endif %}
+						</div>
+
+						<div class="row">
+							{% if operation.preop_record %}
+							{{ render_line(name="URINE", value=operation.preop_record.urine) |safe }}
+							{{ render_line(name="B.U", value=operation.preop_record.blood_urea) |safe }}
+							{% else %}
+							{{ render_line(name="URINE", value="") |safe }}
+							{{ render_line(name="B.U", value="") |safe }}
+							{% endif %}
+						</div>
+
+						<div class="row">
+							{{ render_textbox("DRUG THERAPY notes")| safe }}
+						</div>
+
+						<div class="row">
+							{{ render_textbox("PREMEDICATION") |safe }}
+						</div>
+
+						<div class="row">
+							{{ render_textbox("BY WHOM ORDERED") |safe }}
+						</div>
+
+						<div class="row">
+							{{ render_line(name="time given") |safe }}
+						</div>
+					</div>
+					<!-- /Pre-Operative -->
+
+					<!-- Operative -->
+					<div class="tab-pane" id="operative">
+						<div class="row">
+							{% if operation.op_record %}
+							{{ render_line(name="Operation", value=operation.operation.operation) |safe }}
+							{% else %}
+							{{ render_line(name="Operation", value="") |safe }}
+							{% endif %}
+						</div>
+						<div class="row">
+							<h4 class="title">Anasthetic</h4>
+							{{ render_line(name="Start") |safe }}
+							{{ render_line(name="Finish") |safe }}
+						</div>
+						<hr>
+						<div class="row">
+							<h5 class="title">Anasthetic</h5>
+							{% if operation.op_record %}
+							{{ render_textbox("(drugs and technique)") |safe }}
+							{{ render_line(name="POSTURE", value=operation.op_record.posture) |safe }}
+							{% else %}
+							{{ render_textbox("(drugs and technique)") |safe }}
+							{{ render_line(name="POSTURE") |safe }}
+							{% endif %}
+						</div>
+						<div class="row">
+							{% if operation.op_record %}
+							{{ render_textbox("I.V THERAPY", operation.op_record.iv_therapy) |safe }}
+							{% else %}
+							{{ render_textbox("I.V THERAPY") |safe }}
+							{% endif %}
+						</div>
+						<div class="row">
+							{{ render_line(name="Condition on leaving theatre") |safe }}
+						</div>
+						<div class="row">
+							{% if operation.op_record %}
+							{{ render_line(name="Skin", value=operation.op_record.skin) |safe }}
+							{{ render_line(name="Colour", value=operation.op_record.color) |safe }}
+							{% else %}
+							{{ render_line(name="Skin") |safe }}
+							{{ render_line(name="Colour") |safe }}
+							{% endif %}
+						</div>
+						<div class="row">
+							{% if operation.op_record %}
+							{{ render_textbox(name="REFLEXES",  value=operation.op_record.reflexes) |safe }}
+							{{ render_line(name="B.P.",  value=operation.op_record.blood_pressure) |safe }}
+							{{ render_line(name="P.R.",  value=operation.op_record.pulse_rate) |safe }}
+							{% else %}
+							{{ render_textbox("REFLEXES") |safe }}
+							{{ render_line(name="B.P.") |safe }}
+							{{ render_line(name="P.R.") |safe }}
+							{% endif %}
+						</div>
+						<hr>
+						<div class="row">
+							{% if operation.op_record %}
+							{{ render_textbox("ABNORMAL REACTIONS", operation.op_record.abnormal_reactions) |safe }}
+							{% else %}
+							{{ render_textbox("ABNORMAL REACTIONS") |safe }}
+							{% endif %}
+
+						</div>
+					</div>
+					<!-- /Operative -->
+					
+					<!-- Post Operative -->
+					<div class="tab-pane" id="post_operative">
+						<div class="row">
+							{% if operation.postop_record %}
+							{{ render_textbox("INSTRUCTIONS TO WARD", operation.postop_record.instructions_to_ward) |safe }}
+							{% else %}
+							{{ render_textbox(name="INSTRUCTIONS TO WARD") |safe }}
+							{% endif %}
+						</div>
+						<div class="row">
+							{% if operation.postop_record %}
+							{{ render_textbox("GENERAL", operation.postop_record.general) |safe }}
+							{% else %}
+							{{ render_textbox("GENERAL") |safe }}
+							{% endif %}
+						</div>
+						<div class="row">
+							{% if operation.postop_record %}
+							{{ render_textbox("I.V. THERAPY", operation.postop_record.iv_therapy) |safe }}
+							{% else %}
+							{{ render_textbox("I.V. THERAPY") |safe }}
+							{% endif %}
+						</div>
+						<div class="row">
+							{% if operation.postop_record %}
+							{{ render_textbox("SEDATION", operation.postop_record.sedation) |safe }}
+							{% else %}
+							{{ render_textbox("SEDATION") |safe }}
+							{% endif %}
+						</div>
+						<hr>
+						<div class="row">
+							{% if operation.postop_record %}
+							{{ render_textbox("COMPLICATIONS", operation.postop_record.complications) |safe }}
+							{% else %}
+							{{ render_textbox("COMPLICATIONS") |safe }}
+							{% endif %}
+						</div>
+						<hr>
+						<div class="row">
+							{{ render_textbox("") |safe }}
+						</div>
+					</div>
+					<!-- / Post Operative -->
+
+					<!-- Monitor Vitals -->
+					<div class="tab-pane" id="monitor_vitals">
+						<div class="row">
+							<table class="table">
+							  <tr>
+							  	{% for i in range(14) %}
+							      <th>{{ i*1 }}</th>
+							    {% endfor %}
+							  </tr>
+							  <tr>
+							  	{% for i in range(14) %}
+							      <td>{{ i*2 }}</td>
+								{% endfor %}
+							  </tr>
+							  <tr>
+							  	{% for i in range(14) %}
+							      <td>{{ i*3 }}</td>
+								{% endfor %}
+							  </tr>
+							  <tr>
+							  	{% for i in range(14) %}
+							      <td>{{ i*2 }}</td>
+								{% endfor %}
+							  </tr>
+							  <tr>
+							  	{% for i in range(14) %}
+							      <td>{{ i*7 }}</td>
+								{% endfor %}
+							  </tr>
+							  <tr>
+							  	{% for i in range(14) %}
+							      <td>{{ i*4 }}</td>
+								{% endfor %}
+							  </tr>
+							  <tr>
+							  	{% for i in range(14) %}
+							      <td>{{ i*9 }}</td>
+								{% endfor %}
+							  </tr>
+							  <tr>
+							  	{% for i in range(14) %}
+							      <td>{{ i*3 }}</td>
+								{% endfor %}
+							  </tr>
+							  <tr>
+							  	{% for i in range(14) %}
+							      <td>{{ i*2 }}</td>
+								{% endfor %}
+							  </tr>
+							</table>
+						</div>
+						<div class="row">
+							
+						</div>
+					</div>
+					<!-- / Vitals -->
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+{% endblock %}

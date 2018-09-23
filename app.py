@@ -1,6 +1,7 @@
 from flask import Flask, redirect, request, render_template, url_for, abort, flash, jsonify
 from flask_login import LoginManager, login_required, login_user, logout_user
 from flask_cors import CORS
+from sqlalchemy import and_
 from werkzeug.security import generate_password_hash
 from api.v1 import manager
 import api.v1.models as db
@@ -87,7 +88,10 @@ def get_record_data(something):
 @app.route('/home')
 @login_required
 def index():
-	return render_template('index.html')
+	practitioners_list = db.db_session.query(db.PractitionerDetails).all()
+
+	occupations = db.db_session.query(db.Occupation).all()
+	return render_template('index.html', practitioners=practitioners_list, occupations=occupations)
 
 @app.route('/sw.js')
 def service_worker():
@@ -103,7 +107,7 @@ def profile():
 def display_records_list():
 	practitioners_list = db.db_session.query(db.PractitionerDetails).all()
 
-	occupations = db.db_sessions.query(db.Occupation).all()
+	occupations = db.db_session.query(db.Occupation).all()
 	return render_template('list_records.html', practitioners=practitioners_list, occupations=occupations)
 
 @app.route('/records/<int:record_id>')
@@ -141,7 +145,7 @@ def submit_new_record():
 			 password=generate_password_hash(surname), address=address, occupation_id=occupation)
 			db.db_session.add(practitioner)
 			db.db_session.commit()
-			flash('Successfully added practitioner.')
+			flash('Successfully added practitioner. Default password is their surname.')
 		except Exception as e:
 			flash('Application error!')
 
@@ -151,7 +155,7 @@ def submit_new_record():
 def add_occupation():
 	if request.method == 'POST':
 		try:
-			occupation = db.Occupation(title=request.form.get('', ''))
+			occupation = db.Occupation(title=request.form.get('occupation', ''))
 			db.db_session.add(occupation)
 			db.db_session.commit()
 			flash('Submitted without errors')
@@ -165,23 +169,78 @@ def hospital_details():
 	raw_hospital_wards = db.db_session.query(db.Ward).all()
 	raw_theaters = db.db_session.query(db.Theater).all()
 
+	ward_count = db.db_session.query(db.Ward).count()
+	theater_count = db.db_session.query(db.Theater).count()
+
 	wards = raw_hospital_wards
+	ward_choices = []
 	theaters = []
 
 	for theater in raw_theaters:
-		ward = db.db_session.query(db.Ward).get(int(theater.ward_id))
-		theaters.append({
-			'id': theater.id,
-			'name': theater.name,
-			'ward': ward.name
+		if theater.ward_id is not None:
+			ward = db.db_session.query(db.Ward).get(int(theater.ward_id))
+			theaters.append({
+				'id': theater.id,
+				'name': theater.name,
+				'ward': ward.name
+				})
+		else:
+			theaters.append({
+				'id': theater.id,
+				'name': theater.name,
+				'ward': ''
+				})
+
+	for ward in raw_hospital_wards:
+		ward_choices.append({
+			'key': ward.name,
+			'value': ward.id
 			})
-	return render_template('hospital_details.html', wards=wards, theaters=theaters)
+	return render_template('hospital_details.html', ward_choices=ward_choices, 
+		wards=wards, theaters=theaters, theater_count=theater_count, ward_count=ward_count)
 
 @app.route('/hospital/submit-details', methods=['GET', 'POST'])
 @login_required
 def submit_details():
 	if request.method == 'POST':
 		record_type = request.form.get('record', '')
+		message = ""
+		_class = "alert alert-danger"
+		html_message = ""
+
+		if record_type == 'ward':
+			ward_name = request.form.get('Ward_Name', '')
+			db_ward_count = db.db_session.query(db.Ward).filter(db.Ward.name == ward_name).count()
+			if db_ward_count == 0:
+				try:
+					db_ward = db.Ward(name=ward_name)
+					db.db_session.add(db_ward)
+					db.db_session.commit()
+					message = "Successfully saved the ward"
+					_class = "alert alert-success"
+				except Exception as e:
+					message = "Could not save the ward"
+
+			
+		elif record_type == 'theater':
+			ward = request.form.get('ward', '')
+			theater_name = request.form.get('Theatre_Name', '')
+
+			theater_count = db.db_session.query(db.Theater).filter(and_(db.Theater.name == theater_name, 
+				db.Theater.ward_id == ward)).count()
+			if theater_count == 0:
+				try:
+					new_theater = db.Theater(name=theater_name, ward_id=ward)
+					db.db_session.add(new_theater)
+					db.db_session.commit()
+					message = "Successfully saved the theater"
+					_class = "alert alert-success"
+				except Exception as e:
+					message = "Could not save the theater!"
+
+		html_message = "<p class='" + _class + "'>" + message + "</p>"
+
+		flash(html_message)
 	return render_template('hospital_details.html')
 
 
@@ -190,6 +249,36 @@ def submit_details():
 def hospital_ward():
 	return render_template('hospital_details.html')
 
+@app.route('/operations')
+@login_required
+def view_operations():
+	operations = db.db_session.query(db.OperationRecord).join(db.PatientDetails, 
+		db.OperationRecord.patient_id == db.PatientDetails.id).all()
+	return render_template('view_operations.html', operations=operations)
+
+@app.route('/operations/<int:id>')
+@login_required
+def view_operation(id):
+	operation_data = db.db_session.query(db.OperationRecord).filter(db.OperationRecord.id == id).first()
+	patient = db.db_session.query(db.PatientDetails).filter(db.PatientDetails.id == operation_data.patient_id).first()
+	anaesthetist = db.db_session.query(db.PractitionerDetails).filter(db.PractitionerDetails.id == operation_data.anaesthetist_id).first()
+	surgeon = db.db_session.query(db.PractitionerDetails).filter(db.PractitionerDetails.id == operation_data.surgeon_id).first()
+	preoperative_record = db.db_session.query(db.PreOperativeRecord).filter(db.PreOperativeRecord.id == operation_data.pre_operative_record_id).first()
+	operative_record = db.db_session.query(db.OperativeRecord).filter(db.OperativeRecord.id == operation_data.operative_record_id).first()
+	postoperative_record = db.db_session.query(db.PostOperativeRecord).filter(db.PostOperativeRecord.id == operation_data.post_operative_record_id).first()
+	vitals_record = db.db_session.query(db.VitalsRecord).filter(db.VitalsRecord.operation_record_id == operation_data.id).all()
+
+	return render_template('view_operation.html', operation = {
+		'operation': operation_data, 'patient': patient, 'anaesthetist': anaesthetist, 'surgeon': surgeon,
+		'preop_record': preoperative_record, 'op_record': operative_record, 'postop_record': postoperative_record,
+		'vitals': vitals_record
+		})
+
+@app.route('/patients')
+@login_required
+def view_patients():
+	patients = db.db_session.query(db.PatientDetails).all()
+	return render_template('view_patients.html', patients=patients)
 
 @app.route('/api/login', methods=['POST'])
 def check_api_login():
