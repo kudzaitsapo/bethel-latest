@@ -11,4 +11,4 @@ API & Admin Dashboard:
 2. Log identity of person who adds or updates data
 3. Make the profile page for admin
 4. Deactivate and activate user accounts
-5. Fix the Occupation issue
+5. Fix the Occupation issue & practitioners addition

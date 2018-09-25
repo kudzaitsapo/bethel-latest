@@ -141,13 +141,16 @@ def submit_new_record():
 		address = request.form.get('address', '')
 
 		try:
-			practitioner = db.PractitionerDetails(firstnames=firstnames, surname=surname, gender=gender, phone=phone,
+			practitioner = db.PractitionerDetails(first_names=firstnames, surname=surname, gender=gender, phone=phone,
 			 password=generate_password_hash(surname), address=address, occupation_id=occupation)
 			db.db_session.add(practitioner)
 			db.db_session.commit()
 			flash('Successfully added practitioner. Default password is their surname.')
 		except Exception as e:
+			print(str(e))
 			flash('Application error!')
+
+		#db.db_session.rollback()
 
 	return render_template('new_record.html')
 
