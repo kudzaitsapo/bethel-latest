@@ -26,7 +26,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 #from werkzeug.security import generate_password_hash, check_password_hash
 
 try:
-    db_engine = create_engine('postgres://postgres:password@localhost:5432/bethel')
+    db_engine = create_engine('    postgres://umxeybyicdeqiw:096a881cb75dc62e2f0a8435d57d30081b34ccb74ad1274cc472e296185ed65c@ec2-54-225-76-201.compute-1.amazonaws.com:5432/d4heepaet6jntm')
 except ImportError:
     db_engine = create_engine('sqlite:///test.sqlite')
 
