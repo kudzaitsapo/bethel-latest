@@ -26,7 +26,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 #from werkzeug.security import generate_password_hash, check_password_hash
 
 try:
-    db_engine = create_engine('postgres://umxeybyicdeqiw:096a881cb75dc62e2f0a8435d57d30081b34ccb74ad1274cc472e296185ed65c@ec2-54-225-76-201.compute-1.amazonaws.com:5432/d4heepaet6jntm')
+    db_engine = create_engine('postgres://postgres:password@localhost:5432/bethel')
 except ImportError:
     db_engine = create_engine('sqlite:///test.sqlite')
 
@@ -211,7 +211,7 @@ class OperationRecord(Base):
     operative_record_id = Column(Integer, ForeignKey('operativerecord.id'))
     post_operative_record_id = Column(Integer, ForeignKey('postoperativerecord.id'))
     anaesthetic_id = Column(Integer, ForeignKey('anaesthetic.id'))
-    vitals = relationship('VitalsRecord', backref='operation', lazy='dynamic')
+    #vitals = relationship('VitalsRecord', backref='operation', lazy='dynamic')
     #surgical_team = relationship('PractitionerDetails', secondary='surgicalteam',lazy='dynamic', backref=backref('surgeries', lazy='subquery'))
 
     def __repr__(self):
@@ -233,6 +233,11 @@ class PreOperativeRecord(Base):
     haemoglobin = Column(String)
     blood_urea = Column(String)
     drug_therapy = Column(String)
+    asa_grade = Column(String)
+    mallampati = Column(String)
+    laryngoscopy_grade = Column(String)
+    creat = Column(String)
+    allergies = Column(String)
     attachments = relationship('Attachment', backref='preoperativerecord', lazy='dynamic')
     premedication = relationship('PremedicationRecord', backref='preoperativerecord', lazy='dynamic')
 
@@ -268,7 +273,7 @@ class Anaesthetic(Base):
     id = Column(Integer, primary_key=True)
     start_time = Column(String)
     end_time = Column(String)
-    drug_id = Column(Integer, ForeignKey('drug.id'))
+    drug = Column(String)
     technique_id = Column(Integer, ForeignKey('technique.id'))
 
     def __repr__(self):
@@ -279,7 +284,6 @@ class Drug(Base):
     """ record detailing the drugs used in an anasthetic cocktail"""
     id = Column(Integer, primary_key=True)
     name = Column(String(64), index=True, unique=True)
-    anaesthetics = relationship('Anaesthetic', backref='drug', lazy='dynamic')
 
     def __repr__(self):
         return '<Drug {}>'.format(self.name)
@@ -290,7 +294,6 @@ class Technique(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(64), index=True, unique=True)
     description = Column(String(64))
-    anaesthetic_id = relationship('Anaesthetic', backref='technique', lazy='dynamic')
 
     def __repr__(self):
         return '<Technique {}>'.format(self.name)
@@ -304,6 +307,11 @@ class PostOperativeRecord(Base):
     sedation = Column(String)
     complications = Column(String)
     general = Column(String)
+    post_op_ward = Column(String)
+    analgesia = Column(String)
+    initial_vitals = Column(Integer, ForeignKey('vitalsrecord.id'))
+
+
 
     def __repr__(self):
         return '<PostOperativeRecord {}>'.format(self.id)
@@ -316,7 +324,6 @@ class VitalsRecord(Base):
     oxygen = Column(String)
     blood_pressure = Column(String)
     time = Column(String)
-    operation_record_id = Column(Integer, ForeignKey('operationrecord.id'))
 
     def __repr__(self):
         return '<Vitals {}>'.format(self.id)
@@ -327,12 +334,15 @@ class OperativeRecord(Base):
     id = Column(Integer, primary_key=True)
     posture = Column(String)
     iv_therapy = Column(String)
-    skin = Column(String)
-    color = Column(String)
-    reflexes = Column(String)
     blood_pressure = Column(String)
     pulse_rate = Column(String)
     abnormal_reactions = Column(String)
+    induction = Column(String)
+    maintenance = Column(String)
+    ebl = Column(String)
+    monitors = Column(String)
+
+
 
     def __repr__(self):
         return '<OperativeRecord {}>'.format(self.id)
