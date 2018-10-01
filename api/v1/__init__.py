@@ -1,8 +1,8 @@
 from flask_restless import APIManager
 from .models import Hospital, Ward, Theater
 from .models import PractitionerDetails, PatientDetails
-from .models import PreOperativeRecord, OperativeRecord, PostOperativeRecord
-from .models import OperationRecord, VitalsRecord, Anaesthetic, Occupation
+from .models import PreOperativeRecord, OperativeRecord, PostOperativeRecord, Prescription
+from .models import OperationRecord, VitalsRecord, Anaesthetic, Occupation, PremedicationRecord
 from .models import db_session as db
 
 manager = APIManager(session=db)
@@ -26,3 +26,5 @@ manager.create_api(PostOperativeRecord, collection_name="post-operative-record",
 manager.create_api(OperationRecord, collection_name="operation", methods=['GET','POST','PUT'])
 manager.create_api(VitalsRecord, collection_name="vitals-records", methods=['GET','POST','PUT'])
 manager.create_api(Anaesthetic, collection_name="anaesthetic", methods=['GET', 'POST', 'PUT'])
+manager.create_api(PremedicationRecord, collection_name="premedication", methods=['GET', 'POST', 'PUT'])
+manager.create_api(Prescription, collection_name="prescription", methods=['GET', 'POST', 'PUT'])
