@@ -269,12 +269,10 @@ def view_operation(id):
 	preoperative_record = db.db_session.query(db.PreOperativeRecord).filter(db.PreOperativeRecord.id == operation_data.pre_operative_record_id).first()
 	operative_record = db.db_session.query(db.OperativeRecord).filter(db.OperativeRecord.id == operation_data.operative_record_id).first()
 	postoperative_record = db.db_session.query(db.PostOperativeRecord).filter(db.PostOperativeRecord.id == operation_data.post_operative_record_id).first()
-	vitals_record = db.db_session.query(db.VitalsRecord).filter(db.VitalsRecord.operation_record_id == operation_data.id).all()
-
+	
 	return render_template('view_operation.html', operation = {
 		'operation': operation_data, 'patient': patient, 'anaesthetist': anaesthetist, 'surgeon': surgeon,
-		'preop_record': preoperative_record, 'op_record': operative_record, 'postop_record': postoperative_record,
-		'vitals': vitals_record
+		'preop_record': preoperative_record, 'op_record': operative_record, 'postop_record': postoperative_record
 		})
 
 @app.route('/patients')
