@@ -62,7 +62,6 @@ class Admin(Base, UserMixin):
     def check_password(self, plain_text):
         return check_password_hash(self.password, plain_text)
 
-
 # slightly refactored v0 database models
 class SurgicalTeam(Base):
     """
